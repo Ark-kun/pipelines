@@ -50,7 +50,7 @@ def parse_arguments():
 
 def _compile_pipeline_function(function_name, output_path):
 
-  pipeline_funcs = list(dsl.Pipeline.get_pipeline_functions().keys())
+  pipeline_funcs = list(dsl.Pipeline.get_pipeline_functions())
   if len(pipeline_funcs) == 0:
     raise ValueError('A function with @dsl.pipeline decorator is required in the py file.')
 

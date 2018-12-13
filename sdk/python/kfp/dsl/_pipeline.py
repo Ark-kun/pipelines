@@ -33,6 +33,10 @@ def pipeline(name, description):
   ```
   """
   def _pipeline(func):
+    func._component_human_name = name
+    if description:
+      func._component_description = description
+
     Pipeline.add_pipeline(name, description, func)
     return func
 
@@ -62,7 +66,7 @@ class Pipeline():
 
   # All pipeline functions with @pipeline decorator that are imported.
   # Each key is a pipeline function. Each value is a (name, description).
-  _pipeline_functions = {}
+  _pipeline_functions = set()
 
   @staticmethod
   def get_default_pipeline():
@@ -77,7 +81,7 @@ class Pipeline():
   @staticmethod
   def add_pipeline(name, description, func):
     """Add a pipeline function (decorated with @pipeline)."""
-    Pipeline._pipeline_functions[func] = (name, description)
+    Pipeline._pipeline_functions.add(func)
 
   def __init__(self, name: str):
     """Create a new instance of Pipeline.

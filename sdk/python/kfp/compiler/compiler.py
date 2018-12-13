@@ -472,12 +472,8 @@ class Compiler(object):
 
     argspec = inspect.getfullargspec(pipeline_func)
 
-    registered_pipeline_functions = dsl.Pipeline.get_pipeline_functions()
-    if pipeline_func not in registered_pipeline_functions:
-      raise ValueError('Please use a function with @dsl.pipeline decorator.')
-
-    pipeline_name, _ = dsl.Pipeline.get_pipeline_functions()[pipeline_func]
-    pipeline_name = self._sanitize_name(pipeline_name)
+    pipeline_human_name = getattr(pipeline_func, '_component_human_name', None)
+    pipeline_name = self._sanitize_name(pipeline_human_name)
 
     # Create the arg list with no default values and call pipeline function.
     args_list = [dsl.PipelineParam(self._sanitize_name(arg_name))

@@ -53,5 +53,9 @@ class TestPipeline(unittest.TestCase):
     def my_pipeline2():
       pass
     
-    self.assertEqual(('p1', 'description1'), Pipeline.get_pipeline_functions()[my_pipeline1])
-    self.assertEqual(('p2', 'description2'), Pipeline.get_pipeline_functions()[my_pipeline2])
+    self.assertIn(my_pipeline1, Pipeline.get_pipeline_functions())
+    self.assertIn(my_pipeline2, Pipeline.get_pipeline_functions())
+    self.assertEqual(my_pipeline1._component_human_name, 'p1')
+    self.assertEqual(my_pipeline2._component_human_name, 'p2')
+    self.assertEqual(my_pipeline1._component_description, 'description1')
+    self.assertEqual(my_pipeline2._component_description, 'description2')
