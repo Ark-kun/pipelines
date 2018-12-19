@@ -61,6 +61,8 @@ class ContainerOp(object):
     self.env_variables = []
     self.pod_annotations = {}
     self.pod_labels = {}
+    self.input_artifact_paths = {}
+    self.output_artifact_paths = {}
 
     matches = []
     if arguments:

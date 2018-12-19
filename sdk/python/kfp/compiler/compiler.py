@@ -49,10 +49,10 @@ class Compiler(object):
       return param.op_name + '-' + param.name
     return self._sanitize_name(param.name)
 
-  def _build_conventional_artifact(self, name):
+  def _build_conventional_artifact(self, name, path):
     return {
       'name': name,
-      'path': '/' + name + '.json',
+      'path': path,
       's3': {
         # TODO: parameterize namespace for minio service
         'endpoint': 'minio-service.kubeflow:9000',
@@ -114,16 +114,23 @@ class Compiler(object):
     if output_parameters:
       template['outputs'] = {'parameters': output_parameters}
 
+    # TODO: Get rid of this uglines ASAP. UI metadata and metrics should just be output as normal output artifacts.
+    if 'mlpipeline-ui-metadata' not in op.output_artifact_paths:
+      op.output_artifact_paths['mlpipeline-ui-metadata'] = '/mlpipeline-ui-metadata.json'
+    if 'mlpipeline-metrics' not in op.output_artifact_paths:
+      op.output_artifact_paths['mlpipeline-metrics'] = '/mlpipeline-metrics.json'
+
     # Generate artifact for metadata output
     # The motivation of appending the minio info in the yaml
     # is to specify a unique path for the metadata.
     # TODO: after argo addresses the issue that configures a unique path
     # for the artifact output when default artifact repository is configured,
     # this part needs to be updated to use the default artifact repository.
-    output_artifacts = []
-    output_artifacts.append(self._build_conventional_artifact('mlpipeline-ui-metadata'))
-    output_artifacts.append(self._build_conventional_artifact('mlpipeline-metrics'))
-    template['outputs']['artifacts'] = output_artifacts
+    # FIX: Argo has addressed the issue. Now fix the code.
+
+    from ..components._components import _generate_input_file_name, _generate_output_file_name
+    template['inputs']['artifacts'] = [self._build_conventional_artifact(name, path or _generate_input_file_name(name)) for name, path in op.input_artifact_paths.items()]
+    template['outputs']['artifacts'] = [self._build_conventional_artifact(name, path or _generate_output_file_name(name)) for name, path in op.output_artifact_paths.items()]
     if op.command:
       template['container']['command'] = op.command
 
