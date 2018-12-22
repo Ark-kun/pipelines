@@ -17,7 +17,7 @@ FROM tensorflow/tensorflow:$TF_TAG
 
 RUN apt-get update -y
 
-RUN apt-get install --no-install-recommends -y -q ca-certificates python-dev python-setuptools \
+RUN apt-get install --no-install-recommends -y -q ca-certificates python3-dev python3-setuptools \
                                                   wget unzip git
 
 RUN apt-get install --no-install-recommends -y -q build-essential && \
