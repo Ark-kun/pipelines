@@ -20,8 +20,6 @@ RUN apt-get update -y
 
 RUN apt-get install --no-install-recommends -y -q ca-certificates python3-dev python3-setuptools wget unzip git
 
-RUN easy_install pip
-
 RUN pip install pyyaml==3.12 six==1.11.0 requests==2.18.4 tensorflow==1.7.0 \
       kubernetes google-api-python-client retrying
 

@@ -17,8 +17,6 @@ FROM ubuntu:16.04
 
 RUN apt-get update -y && apt-get install --no-install-recommends -y -q ca-certificates python3-dev python3-setuptools wget unzip
 
-RUN easy_install pip
-
 RUN pip install google-api-python-client==1.6.2
 
 RUN pip install tensorflow==1.6.0
