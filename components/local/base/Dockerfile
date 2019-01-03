@@ -17,11 +17,12 @@ FROM ubuntu:16.04
 
 RUN apt-get update -y && apt-get install --no-install-recommends -y -q ca-certificates python3-dev python3-setuptools wget unzip
 
-RUN pip install google-api-python-client==1.6.2
-RUN pip install pandas==0.18.1
-RUN pip install scikit-learn==0.19.1
-RUN pip install scipy==1.0.0
-RUN pip install tensorflow==1.5
+RUN pip3 install \
+        google-api-python-client==1.6.2 \
+        pandas==0.18.1 \
+        scikit-learn==0.19.1 \
+        scipy==1.0.0 \
+        tensorflow==1.5
 
 RUN wget -nv https://dl.google.com/dl/cloudsdk/release/google-cloud-sdk.zip && \
     unzip -qq google-cloud-sdk.zip -d tools && \

@@ -17,7 +17,7 @@ FROM ubuntu:16.04
 RUN apt-get update -y && apt-get install --no-install-recommends -y -q ca-certificates python3-dev python3-setuptools \
                                                   wget unzip git
 
-RUN pip install absl-py==0.3.0 \
+RUN pip3 install absl-py==0.3.0 \
         apache-beam==2.5.0 \
         astor==0.7.1 \
         avro==1.8.2 \
