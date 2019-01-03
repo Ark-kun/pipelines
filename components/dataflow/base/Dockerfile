@@ -14,7 +14,7 @@
 
 FROM ubuntu:16.04
 
-RUN apt-get update -y && apt-get install --no-install-recommends -y -q ca-certificates python3-dev python3-setuptools \
+RUN apt-get update -y && apt-get install --no-install-recommends -y -q ca-certificates python3-dev python3-setuptools python3-pip \
                                                   wget unzip git
 
 RUN pip3 install absl-py==0.3.0 \

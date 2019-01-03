@@ -17,4 +17,4 @@ FROM ml-pipeline-local-base
 RUN mkdir /usr/licenses && \
     /ml/license.sh /ml/third_party_licenses.csv /usr/licenses
 
-ENTRYPOINT ["python", "/ml/confusion_matrix.py"]
+ENTRYPOINT ["python3", "/ml/confusion_matrix.py"]

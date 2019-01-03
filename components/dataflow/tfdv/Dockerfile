@@ -15,7 +15,7 @@
 FROM ml-pipeline-dataflow-base
 
 RUN apt-get update -y && \
-    apt-get install --no-install-recommends -y -q build-essential && \
+    apt-get install --no-install-recommends -y -q build-essential python3-pip && \
     pip3 install tensorflow==1.9.0 \
         tensorflow-transform==0.9.0 \
         tensorflow-data-validation==0.9.0 && \
@@ -26,4 +26,4 @@ WORKDIR /ml
 RUN mkdir /usr/licenses && \
     /ml/license.sh /ml/third_party_licenses.csv /usr/licenses
 
-ENTRYPOINT ["python", "/ml/validate.py"]
+ENTRYPOINT ["python3", "/ml/validate.py"]

@@ -18,7 +18,7 @@ ARG TRAINER_IMAGE_NAME
 
 RUN apt-get update -y
 
-RUN apt-get install --no-install-recommends -y -q ca-certificates python3-dev python3-setuptools wget unzip git
+RUN apt-get install --no-install-recommends -y -q ca-certificates python3-dev python3-setuptools python3-pip wget unzip git
 
 RUN pip3 install pyyaml==3.12 six==1.11.0 requests==2.18.4 tensorflow==1.7.0 \
       kubernetes google-api-python-client retrying
@@ -57,4 +57,4 @@ ADD build /ml
 RUN mkdir /usr/licenses && \
     /ml/license.sh /ml/third_party_licenses.csv /usr/licenses
 
-ENTRYPOINT ["python", "/ml/launch_tf_job.py"]
+ENTRYPOINT ["python3", "/ml/launch_tf_job.py"]

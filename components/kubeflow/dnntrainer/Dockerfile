@@ -17,7 +17,7 @@ FROM tensorflow/tensorflow:$TF_TAG
 
 RUN apt-get update -y
 
-RUN apt-get install --no-install-recommends -y -q ca-certificates python3-dev python3-setuptools \
+RUN apt-get install --no-install-recommends -y -q ca-certificates python3-dev python3-setuptools python3-pip \
                                                   wget unzip git
 
 RUN apt-get install --no-install-recommends -y -q build-essential && \
@@ -33,4 +33,4 @@ RUN mkdir /usr/licenses && \
 
 WORKDIR /ml
 
-ENTRYPOINT ["python", "-m", "trainer.task"]
+ENTRYPOINT ["python3", "-m", "trainer.task"]

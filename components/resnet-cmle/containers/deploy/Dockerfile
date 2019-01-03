@@ -16,7 +16,7 @@ FROM ubuntu:16.04
 
 RUN apt-get update -y
 
-RUN apt-get install --no-install-recommends -y -q ca-certificates python3-dev python3-setuptools \
+RUN apt-get install --no-install-recommends -y -q ca-certificates python3-dev python3-setuptools python3-pip \
                                                   wget unzip git
 
 RUN pip3 install pyyaml==3.12 six==1.11.0 tensorflow==1.8.0 apache-beam==2.5.0 
@@ -43,4 +43,4 @@ ADD /build /resnet
 RUN mkdir /usr/licenses && \
     /resnet/license.sh /resnet/third_party_licenses.csv /usr/licenses
 
-ENTRYPOINT ["python", "/resnet/deploy.py"]
+ENTRYPOINT ["python3", "/resnet/deploy.py"]
