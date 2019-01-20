@@ -21,6 +21,8 @@ sys.path.insert(0, __file__ + '/../../../')
 
 import kfp.components as comp
 from kfp.components._yaml_utils import load_yaml
+from ._contextmanagers import ResolveContainerTaskContext
+
 
 class LoadComponentTestCase(unittest.TestCase):
     def test_load_component_from_file(self):
@@ -36,11 +38,11 @@ class LoadComponentTestCase(unittest.TestCase):
         arg1 = 3
         arg2 = 5
         task1 = task_factory1(arg1, arg2)
-        assert task1.human_name == component_dict['name']
-        assert task1.image == component_dict['implementation']['container']['image']
+        assert task1.component_ref._component_spec.name == component_dict['name']
+        assert task1.component_ref._component_spec.implementation.container.image == component_dict['implementation']['container']['image']
 
-        assert task1.arguments[0] == str(arg1)
-        assert task1.arguments[1] == str(arg2)
+        assert str(task1.arguments['a']) == str(arg1)
+        assert str(task1.arguments['b']) == str(arg2)
 
     @unittest.skip
     @unittest.expectedFailure #The repo is non-public and will change soon. TODO: Update the URL and enable the test once we move to a public repo
@@ -57,11 +59,11 @@ class LoadComponentTestCase(unittest.TestCase):
         arg1 = 3
         arg2 = 5
         task1 = task_factory1(arg1, arg2)
-        assert task1.human_name == component_dict['name']
-        assert task1.image == component_dict['implementation']['container']['image']
+        assert task1.component_ref._component_spec.name == component_dict['name']
+        assert task1.component_ref._component_spec.implementation.container.image == component_dict['implementation']['container']['image']
 
-        assert task1.arguments[0] == str(arg1)
-        assert task1.arguments[1] == str(arg2)
+        assert str(task1.arguments['a']) == str(arg1)
+        assert str(task1.arguments['b']) == str(arg2)
 
     def test_loading_minimal_component(self):
         component_text = '''\
@@ -73,7 +75,7 @@ implementation:
         task_factory1 = comp.load_component(text=component_text)
 
         task1 = task_factory1()
-        assert task1.image == component_dict['implementation']['container']['image']
+        assert task1.component_ref._component_spec.implementation.container.image == component_dict['implementation']['container']['image']
 
     @unittest.expectedFailure
     def test_fail_on_duplicate_input_names(self):
@@ -239,7 +241,8 @@ implementation:
       - inputValue: Data
 '''
         task_factory1 = comp.load_component(text=component_text)
-        task1 = task_factory1('some-data')
+        with ResolveContainerTaskContext():
+            task1 = task_factory1('some-data')
 
         self.assertEqual(task1.arguments, ['--data', 'some-data'])
 
@@ -255,7 +258,8 @@ implementation:
       - {outputPath: Data}
 '''
         task_factory1 = comp.load_component(text=component_text)
-        task1 = task_factory1()
+        with ResolveContainerTaskContext():
+            task1 = task_factory1()
 
         self.assertEqual(len(task1.arguments), 2)
         self.assertEqual(task1.arguments[0], '--output-data')
@@ -294,7 +298,8 @@ implementation:
       - z
 '''
         task_factory1 = comp.load_component_from_text(component_text)
-        task1 = task_factory1()
+        with ResolveContainerTaskContext():
+            task1 = task_factory1()
 
         self.assertEqual(task1.command, ['a', 'z'])
 
@@ -312,7 +317,8 @@ implementation:
       - z
 '''
         task_factory1 = comp.load_component_from_text(component_text)
-        task1 = task_factory1()
+        with ResolveContainerTaskContext():
+            task1 = task_factory1()
 
         self.assertEqual(task1.command, ['a', 'z'])
 
@@ -328,7 +334,8 @@ implementation:
       - concat: [{inputValue: In1}, {inputValue: In2}]
 '''
         task_factory1 = comp.load_component(text=component_text)
-        task1 = task_factory1('some', 'data')
+        with ResolveContainerTaskContext():
+            task1 = task_factory1('some', 'data')
 
         self.assertEqual(task1.arguments, ['somedata'])
 
@@ -344,7 +351,8 @@ implementation:
           else: --false-arg
 '''
         task_factory1 = comp.load_component(text=component_text)
-        task = task_factory1()
+        with ResolveContainerTaskContext():
+            task = task_factory1()
         self.assertEqual(task.arguments, ['--true-arg']) 
 
     def test_command_if_boolean_false_then_else(self):
@@ -359,7 +367,8 @@ implementation:
           else: --false-arg
 '''
         task_factory1 = comp.load_component(text=component_text)
-        task = task_factory1()
+        with ResolveContainerTaskContext():
+            task = task_factory1()
         self.assertEqual(task.arguments, ['--false-arg']) 
 
     def test_command_if_true_string_then_else(self):
@@ -374,7 +383,8 @@ implementation:
           else: --false-arg
 '''
         task_factory1 = comp.load_component(text=component_text)
-        task = task_factory1()
+        with ResolveContainerTaskContext():
+            task = task_factory1()
         self.assertEqual(task.arguments, ['--true-arg']) 
 
     def test_command_if_false_string_then_else(self):
@@ -389,8 +399,8 @@ implementation:
           else: --false-arg
 '''
         task_factory1 = comp.load_component(text=component_text)
-
-        task = task_factory1()
+        with ResolveContainerTaskContext():
+            task = task_factory1()
         self.assertEqual(task.arguments, ['--false-arg']) 
 
     def test_command_if_is_present_then(self):
@@ -408,10 +418,12 @@ implementation:
 '''
         task_factory1 = comp.load_component(text=component_text)
 
-        task_then = task_factory1('data')
+        with ResolveContainerTaskContext():
+            task_then = task_factory1('data')
         self.assertEqual(task_then.arguments, ['--in', 'data']) 
         
-        task_else = task_factory1()
+        with ResolveContainerTaskContext():
+            task_else = task_factory1()
         self.assertEqual(task_else.arguments, [])
 
     def test_command_if_is_present_then_else(self):
@@ -429,10 +441,12 @@ implementation:
 '''
         task_factory1 = comp.load_component(text=component_text)
 
-        task_then = task_factory1('data')
+        with ResolveContainerTaskContext():
+            task_then = task_factory1('data')
         self.assertEqual(task_then.arguments, ['--in', 'data']) 
         
-        task_else = task_factory1()
+        with ResolveContainerTaskContext():
+            task_else = task_factory1()
         self.assertEqual(task_else.arguments, ['--no-in'])
 
 
@@ -452,10 +466,12 @@ implementation:
 '''
         task_factory1 = comp.load_component(text=component_text)
 
-        task_then = task_factory1(True, 'test_data.txt', 42)
+        with ResolveContainerTaskContext():
+            task_then = task_factory1(True, 'test_data.txt', 42)
         self.assertEqual(task_then.arguments, ['--test-data', 'test_data.txt', '--test-param1', '42'])
         
-        task_else = task_factory1()
+        with ResolveContainerTaskContext():
+            task_else = task_factory1()
         self.assertEqual(task_else.arguments, [])
 
 
