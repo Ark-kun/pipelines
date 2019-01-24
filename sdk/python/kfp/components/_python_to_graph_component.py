@@ -106,3 +106,52 @@ def create_graph_component_from_pipeline_func(pipeline_func) -> ComponentSpec:
         )
     )
     return component
+
+
+from typing import Mapping, Iterable
+
+
+def create_graph_component_from_pipeline_outputs(component_name: str, output_values: Mapping[str, TaskOutputArgument], additional_tasks: Iterable[TaskSpec]) -> ComponentSpec:
+    #TODO: Think about how to specify input ordering
+    #TODO: Think about how to specify default input values
+    #TODO: Infer graph input types from the tasks they're passed into
+    #TODO: Issue a warning when agraph input is passed as an argument to multiple component inputs with different types
+    #TODO: Think about what happens when task belongs to multiple pipelines. What happens with task IDs in output references? Maybe we should clone task objects before setting the rewritten IDs?
+
+    tasks = set(additional_tasks)
+    tasks.update([argument.task_output._task for argument in output_values.values() if hasattr(argument, 'task_output')])
+
+    #Adding tasks recursively
+    task_count = 0
+    #added_tasks = set()
+    while task_count != len(tasks):
+        task_count = len(tasks)
+        tasks.update([argument.task_output._task for argument in output_values.values() if hasattr(argument, 'task_output')])
+
+    #TODO: Topo-sort!
+
+    #TODO: 
+    task_map = {}
+    for task in tasks:
+        #Rewriting task ids so that they're same every time
+        task_id = task.component_ref._component_spec.name or "Task"
+        task_id = _convert_name_and_make_it_unique_by_adding_number(task_id, task_map.keys(), lambda x: x)
+        for output_ref in task.outputs.values():
+            output_ref.task_output.task_id = task_id
+        task_map[task_id] = task
+
+    graph_input_names = sorted(set(argument.input_name for task in tasks for argument in task.arguments.values() if isinstance(argument, GraphInputArgument)))
+    graph_input_specs = [InputSpec(name=name) for name in graph_input_names]
+    graph_output_specs = [OutputSpec(name=name, type=argument.task_output._type) for name, argument in output_values.items()]
+    component = ComponentSpec(
+        name=component_name,
+        inputs=graph_input_specs,
+        outputs=graph_output_specs,
+        implementation=GraphImplementation(
+            graph=GraphSpec(
+                tasks=task_map,
+                output_values=OrderedDict(output_values),
+            )
+        )
+    )
+    return component

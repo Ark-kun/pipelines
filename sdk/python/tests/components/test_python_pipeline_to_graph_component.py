@@ -22,6 +22,7 @@ sys.path.insert(0, __file__ + '/../../../')
 
 import kfp.components as comp
 from kfp.components._python_to_graph_component import create_graph_component_from_pipeline_func
+from kfp.components._structures import GraphInputArgument
 
 
 component_with_2_inputs_and_0_outputs = '''\
@@ -116,6 +117,33 @@ class PythonPipelineToGraphComponentTestCase(unittest.TestCase):
         self.assertListEqual([input.name for input in graph_component.inputs], ['Pipeline param 1']) #Relies on human name conversion function stability
         self.assertListEqual([output.name for output in graph_component.outputs], ['Pipeline output 1', 'Pipeline output 2'])
         self.assertEqual(len(graph_component.implementation.graph.tasks), 2)
+
+    def test_handle_creating_graph_component_from_pipeline_outputs(self):
+        from kfp.components._python_to_graph_component import create_graph_component_from_pipeline_outputs
+
+        producer_op = comp.load_component_from_text(component_with_0_inputs_and_2_outputs)
+        processor_op = comp.load_component_from_text(component_with_2_inputs_and_2_outputs)
+        consumer_op = comp.load_component_from_text(component_with_2_inputs_and_0_outputs)
+
+        pipeline_param_1 = GraphInputArgument('Pipeline param 1')
+
+        producer_task = producer_op()
+        processor_task = processor_op(pipeline_param_1, producer_task.outputs['Output 2'])
+        consumer_task = consumer_op(processor_task.outputs['Output 1'], processor_task.outputs['Output 2'])
+
+        graph_component = create_graph_component_from_pipeline_outputs(
+            'Graph component 1',
+            OrderedDict([
+                ('Pipeline output 1', producer_task.outputs['Output 1']),
+                ('Pipeline output 2', processor_task.outputs['Output 2']),
+            ]),
+            additional_tasks=[consumer_task],
+        )
+
+        self.assertEqual(len(graph_component.inputs), 1)
+        self.assertListEqual([input.name for input in graph_component.inputs], ['Pipeline param 1']) #Relies on human name conversion function stability
+        self.assertListEqual([output.name for output in graph_component.outputs], ['Pipeline output 1', 'Pipeline output 2'])
+        self.assertEqual(len(graph_component.implementation.graph.tasks), 3)
 
 
 if __name__ == '__main__':
