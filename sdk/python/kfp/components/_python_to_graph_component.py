@@ -19,10 +19,10 @@ __all__ = [
 
 import inspect
 from collections import OrderedDict
-from typing import Callable
+from typing import Callable, Iterable, Mapping
 
 from . import _components
-from ._structures import TaskSpec, ComponentSpec, OutputSpec, GraphInputReference, TaskOutputArgument, GraphImplementation, GraphSpec
+from ._structures import TaskSpec, ComponentSpec, InputSpec, OutputSpec, GraphInputArgument, GraphInputReference, TaskOutputArgument, GraphImplementation, GraphSpec
 from ._naming import _make_name_unique_by_adding_index
 from ._python_op import _extract_component_interface
 from ._components import _create_task_factory_from_component_spec
@@ -170,3 +170,49 @@ def create_graph_component_spec_from_pipeline_func(pipeline_func: Callable, embe
         )
     )
     return component_spec
+
+
+def create_graph_component_from_pipeline_outputs(component_name: str, output_values: Mapping[str, TaskOutputArgument], additional_tasks: Iterable[TaskSpec]) -> ComponentSpec:
+    #TODO: Think about how to specify input ordering
+    #TODO: Think about how to specify default input values
+    #TODO: Infer graph input types from the tasks they're passed into
+    #TODO: Issue a warning when graph input is passed as an argument to multiple component inputs with different types
+
+    tasks = set(additional_tasks)
+    tasks.update([argument.task_output.task for argument in output_values.values() if hasattr(argument, 'task_output')])
+
+    #Adding tasks recursively
+    task_count = 0
+    #added_tasks = set()
+    while task_count != len(tasks):
+        task_count = len(tasks)
+        for task in tasks:
+            tasks.update([argument.task_output.task for argument in (task.arguments or {}).values() if hasattr(argument, 'task_output')])
+
+    #TODO: Topo-sort!
+
+    #TODO: 
+    task_map = {}
+    for task in tasks:
+        #Rewriting task ids so that they're same every time
+        task_id = task.component_ref.spec.name or "Task"
+        task_id = _make_name_unique_by_adding_index(task_id, task_map.keys(), ' ')
+        for output_ref in task.outputs.values():
+            output_ref.task_output.task_id = task_id
+        task_map[task_id] = task
+
+    graph_input_names = sorted(set(argument.graph_input.input_name for task in tasks for argument in task.arguments.values() if isinstance(argument, GraphInputArgument)))
+    graph_input_specs = [InputSpec(name=name) for name in graph_input_names]
+    graph_output_specs = [OutputSpec(name=name, type=argument.task_output.type) for name, argument in output_values.items()]
+    component = ComponentSpec(
+        name=component_name,
+        inputs=graph_input_specs,
+        outputs=graph_output_specs,
+        implementation=GraphImplementation(
+            graph=GraphSpec(
+                tasks=task_map,
+                output_values=OrderedDict(output_values),
+            )
+        )
+    )
+    return component

@@ -19,7 +19,9 @@ from collections import OrderedDict
 from pathlib import Path
 
 import kfp.components as comp
+from kfp.components.structures import GraphInputReference
 from kfp.components._python_to_graph_component import create_graph_component_spec_from_pipeline_func
+from kfp.components._python_to_graph_component import create_graph_component_from_pipeline_outputs
 
 
 class PythonPipelineToGraphComponentTestCase(unittest.TestCase):
@@ -43,6 +45,33 @@ class PythonPipelineToGraphComponentTestCase(unittest.TestCase):
 
         self.assertEqual(len(graph_component.inputs), 1)
         self.assertListEqual([input.name for input in graph_component.inputs], ['pipeline_param_1']) #Relies on human name conversion function stability
+        self.assertListEqual([output.name for output in graph_component.outputs], ['Pipeline output 1', 'Pipeline output 2'])
+        self.assertEqual(len(graph_component.implementation.graph.tasks), 3)
+
+    def test_handle_creating_graph_component_from_pipeline_outputs(self):
+        test_data_dir = Path(__file__).parent / 'test_data'
+
+        producer_op = comp.load_component_from_file(str(test_data_dir / 'component_with_0_inputs_and_2_outputs.component.yaml'))
+        processor_op = comp.load_component_from_file(str(test_data_dir / 'component_with_2_inputs_and_2_outputs.component.yaml'))
+        consumer_op = comp.load_component_from_file(str(test_data_dir / 'component_with_2_inputs_and_0_outputs.component.yaml'))
+
+        pipeline_param_1 = GraphInputReference('Pipeline param 1').as_argument()
+
+        producer_task = producer_op()
+        processor_task = processor_op(pipeline_param_1, producer_task.outputs['Output 2'])
+        consumer_task = consumer_op(processor_task.outputs['Output 1'], processor_task.outputs['Output 2'])
+
+        graph_component = create_graph_component_from_pipeline_outputs(
+            'Graph component 1',
+            OrderedDict([
+                ('Pipeline output 1', producer_task.outputs['Output 1']),
+                ('Pipeline output 2', processor_task.outputs['Output 2']),
+            ]),
+            additional_tasks=[consumer_task],
+        )
+
+        self.assertEqual(len(graph_component.inputs), 1)
+        self.assertListEqual([input.name for input in graph_component.inputs], ['Pipeline param 1']) #Relies on human name conversion function stability
         self.assertListEqual([output.name for output in graph_component.outputs], ['Pipeline output 1', 'Pipeline output 2'])
         self.assertEqual(len(graph_component.implementation.graph.tasks), 3)
 
