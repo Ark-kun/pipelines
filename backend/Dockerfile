@@ -10,7 +10,7 @@ RUN apk update && apk upgrade && \
 RUN GO111MODULE=on go build -o /bin/apiserver backend/src/apiserver/*.go
 
 FROM python:3.5 as sample-compiler
-RUN pip3 install PyYAML
+RUN pip3 install PyYAML kubernetes
 
 COPY . /pipelines
 
