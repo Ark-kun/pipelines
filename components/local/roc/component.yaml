@@ -5,7 +5,7 @@ inputs:
   - {name: True class,        type: String, default: 'true',            description: 'The true class label for the sample. Default is "true".'}
   - {name: True score column, type: String, default: 'true',            description: 'The name of the column for positive probability.'}
   - {name: Target lambda,     type: String, default: '',                description: 'Text of Python lambda function which returns boolean value indicating whether the classification result is correct.\nFor example, "lambda x: x[''a''] and x[''b'']". If missing, input must have a "target" column.'}
-  - {name: Output dir,        type: {GcsPath: {path_type: Directory}},  description: 'GCS path of the output directory.'}     #TODO: Replace dir with single file
+  - {name: Output dir,        type: {GcsPath: {path_type: Directory}}, default: '',  description: 'GCS path of the output directory.'}     #TODO: Replace dir with single file
 #outputs:
 #  - {name: UI metadata,       type: UI metadata}
 #  - {name: Metrics,           type: Metrics}

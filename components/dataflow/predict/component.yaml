@@ -9,8 +9,8 @@ inputs:
   - {name: Model,               type: {GcsPath: {path_type: Directory, data_type: Exported TensorFlow models dir}}, description: 'GCS or local path of model trained with tft preprocessed data.'}   # Models trained with estimator are exported to base/export/export/123456781 directory.  # Our trainer export only one model. #TODO: Output single model from trainer
   - {name: Batch size,          type: Integer,   default: '32',           description: 'Batch size used in prediction.'}
   - {name: Run mode,            type: String,    default: local,          description: 'Whether to run the job locally or in Cloud Dataflow. Valid values are "local" and "cloud".'}
-  - {name: GCP project,         type: GcpProject,                         description: 'The GCP project to run the dataflow job.'}
-  - {name: Predictions dir,     type: {GcsPath: {path_type: Directory}},  description: 'GCS or local directory.'} #Will contain prediction_results-* and schema.json files; TODO: Split outputs and replace dir with single file
+  - {name: GCP project,         type: GcpProject, default: '',                         description: 'The GCP project to run the dataflow job.'}
+  - {name: Predictions dir,     type: {GcsPath: {path_type: Directory}}, default: '',  description: 'GCS or local directory.'} #Will contain prediction_results-* and schema.json files; TODO: Split outputs and replace dir with single file
 outputs:
   - {name: Predictions dir,     type: {GcsPath: {path_type: Directory}},  description: 'GCS or local directory.'} #Will contain prediction_results-* and schema.json files; TODO: Split outputs and replace dir with single file
 implementation:

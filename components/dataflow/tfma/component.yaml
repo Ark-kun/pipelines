@@ -11,8 +11,8 @@ inputs:
 - {name: Schema,          type: {GcsPath: {data_type: TFDV schema JSON}}, description: GCS json schema file path.}
 - {name: Run mode,        type: String,     default: local,               description: whether to run the job locally or in Cloud Dataflow.}
 - {name: GCP project,     type: GcpProject, default: '',                  description: 'The GCP project to run the dataflow job, if running in the `cloud` mode.'}
-- {name: Slice columns,   type: String,                                   description: Comma-separated list of columns on which to slice for analysis.}
-- {name: Analysis results dir, type: {GcsPath: {path_type: Directory}},   description: GCS or local directory where the analysis results should be written.}
+- {name: Slice columns,   type: String, default: '',                                   description: Comma-separated list of columns on which to slice for analysis.}
+- {name: Analysis results dir, type: {GcsPath: {path_type: Directory}}, default: '',   description: GCS or local directory where the analysis results should be written.}
 outputs:
 - {name: Analysis results dir, type: {GcsPath: {path_type: Directory}},   description: GCS or local directory where the analysis results should were written.}
 implementation:
