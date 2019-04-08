@@ -1,0 +1,350 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>kfp.components._components &#8212; Kubeflow Pipelines  documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for kfp.components._components</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2018 Google LLC</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#      http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;load_component&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;load_component_from_text&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;load_component_from_url&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;load_component_from_file&#39;</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">OrderedDict</span>
+<span class="kn">from</span> <span class="nn">._naming</span> <span class="k">import</span> <span class="n">_sanitize_file_name</span><span class="p">,</span> <span class="n">_sanitize_python_function_name</span><span class="p">,</span> <span class="n">generate_unique_name_conversion_table</span>
+<span class="kn">from</span> <span class="nn">._yaml_utils</span> <span class="k">import</span> <span class="n">load_yaml</span>
+<span class="kn">from</span> <span class="nn">._structures</span> <span class="k">import</span> <span class="n">ComponentSpec</span>
+<span class="kn">from</span> <span class="nn">._structures</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">kfp.dsl</span> <span class="k">import</span> <span class="n">PipelineParam</span>
+<span class="kn">from</span> <span class="nn">kfp.dsl.types</span> <span class="k">import</span> <span class="n">InconsistentTypeException</span><span class="p">,</span> <span class="n">check_types</span>
+<span class="kn">import</span> <span class="nn">kfp</span>
+
+<span class="n">_default_component_name</span> <span class="o">=</span> <span class="s1">&#39;Component&#39;</span>
+
+
+<div class="viewcode-block" id="load_component"><a class="viewcode-back" href="../../../source/kfp.components.html#kfp.components._components.load_component">[docs]</a><span class="k">def</span> <span class="nf">load_component</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">url</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Loads component from text, file or URL and creates a task factory function</span>
+<span class="sd">    </span>
+<span class="sd">    Only one argument should be specified.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        filename: Path of local file containing the component definition.</span>
+<span class="sd">        url: The URL of the component file data</span>
+<span class="sd">        text: A string containing the component file data.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A factory function with a strongly-typed signature.</span>
+<span class="sd">        Once called with the required arguments, the factory constructs a pipeline task instance (ContainerOp).</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="c1">#This function should be called load_task_factory since it returns a factory function.</span>
+    <span class="c1">#The real load_component function should produce an object with component properties (e.g. name, description, inputs/outputs).</span>
+    <span class="c1">#TODO: Change this function to return component spec object but it should be callable to construct tasks.</span>
+    <span class="n">non_null_args_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">([</span><span class="n">name</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">locals</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">value</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">non_null_args_count</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Need to specify exactly one source&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">filename</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">load_component_from_file</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">url</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">load_component_from_url</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">text</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">load_component_from_text</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Need to specify a source&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="load_component_from_url"><a class="viewcode-back" href="../../../source/kfp.components.html#kfp.components._components.load_component_from_url">[docs]</a><span class="k">def</span> <span class="nf">load_component_from_url</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Loads component from URL and creates a task factory function</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        url: The URL of the component file data</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A factory function with a strongly-typed signature.</span>
+<span class="sd">        Once called with the required arguments, the factory constructs a pipeline task instance (ContainerOp).</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">if</span> <span class="n">url</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span>
+    <span class="kn">import</span> <span class="nn">requests</span>
+    <span class="n">resp</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+    <span class="n">resp</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">_load_component_from_yaml_or_zip_bytes</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">content</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="load_component_from_file"><a class="viewcode-back" href="../../../source/kfp.components.html#kfp.components._components.load_component_from_file">[docs]</a><span class="k">def</span> <span class="nf">load_component_from_file</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Loads component from file and creates a task factory function</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        filename: Path of local file containing the component definition.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A factory function with a strongly-typed signature.</span>
+<span class="sd">        Once called with the required arguments, the factory constructs a pipeline task instance (ContainerOp).</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">component_stream</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_load_component_from_yaml_or_zip_stream</span><span class="p">(</span><span class="n">component_stream</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="load_component_from_text"><a class="viewcode-back" href="../../../source/kfp.components.html#kfp.components._components.load_component_from_text">[docs]</a><span class="k">def</span> <span class="nf">load_component_from_text</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Loads component from text and creates a task factory function</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        text: A string containing the component file data.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A factory function with a strongly-typed signature.</span>
+<span class="sd">        Once called with the required arguments, the factory constructs a pipeline task instance (ContainerOp).</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">if</span> <span class="n">text</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span>
+    <span class="k">return</span> <span class="n">_create_task_factory_from_component_text</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
+
+
+<span class="n">_COMPONENT_FILE_NAME_IN_ARCHIVE</span> <span class="o">=</span> <span class="s1">&#39;component.yaml&#39;</span>
+
+
+<span class="k">def</span> <span class="nf">_load_component_from_yaml_or_zip_bytes</span><span class="p">(</span><span class="nb">bytes</span><span class="p">,</span> <span class="n">component_filename</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="kn">import</span> <span class="nn">io</span>
+    <span class="n">component_stream</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="nb">bytes</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_load_component_from_yaml_or_zip_stream</span><span class="p">(</span><span class="n">component_stream</span><span class="p">,</span> <span class="n">component_filename</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_load_component_from_yaml_or_zip_stream</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span> <span class="n">component_filename</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Loads component from a stream and creates a task factory function.</span>
+<span class="sd">    The stream can be YAML or a zip file with a component.yaml file inside.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="kn">import</span> <span class="nn">zipfile</span>
+    <span class="n">stream</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">is_zipfile</span><span class="p">(</span><span class="n">stream</span><span class="p">):</span>
+        <span class="n">stream</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">ZipFile</span><span class="p">(</span><span class="n">stream</span><span class="p">)</span> <span class="k">as</span> <span class="n">zip_obj</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">zip_obj</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">_COMPONENT_FILE_NAME_IN_ARCHIVE</span><span class="p">)</span> <span class="k">as</span> <span class="n">component_stream</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">_create_task_factory_from_component_text</span><span class="p">(</span><span class="n">component_stream</span><span class="p">,</span> <span class="n">component_filename</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">stream</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_create_task_factory_from_component_text</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span> <span class="n">component_filename</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_create_task_factory_from_component_text</span><span class="p">(</span><span class="n">text_or_file</span><span class="p">,</span> <span class="n">component_filename</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="n">component_dict</span> <span class="o">=</span> <span class="n">load_yaml</span><span class="p">(</span><span class="n">text_or_file</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_create_task_factory_from_component_dict</span><span class="p">(</span><span class="n">component_dict</span><span class="p">,</span> <span class="n">component_filename</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_create_task_factory_from_component_dict</span><span class="p">(</span><span class="n">component_dict</span><span class="p">,</span> <span class="n">component_filename</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="n">component_spec</span> <span class="o">=</span> <span class="n">ComponentSpec</span><span class="o">.</span><span class="n">from_struct</span><span class="p">(</span><span class="n">component_dict</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_create_task_factory_from_component_spec</span><span class="p">(</span><span class="n">component_spec</span><span class="p">,</span> <span class="n">component_filename</span><span class="p">)</span>
+
+
+<span class="n">_inputs_dir</span> <span class="o">=</span> <span class="s1">&#39;/inputs&#39;</span>
+<span class="n">_outputs_dir</span> <span class="o">=</span> <span class="s1">&#39;/outputs&#39;</span>
+<span class="n">_single_io_file_name</span> <span class="o">=</span> <span class="s1">&#39;data&#39;</span>
+
+
+<span class="k">def</span> <span class="nf">_generate_input_file_name</span><span class="p">(</span><span class="n">port_name</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">_inputs_dir</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">_sanitize_file_name</span><span class="p">(</span><span class="n">port_name</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">_single_io_file_name</span>
+
+
+<span class="k">def</span> <span class="nf">_generate_output_file_name</span><span class="p">(</span><span class="n">port_name</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">_outputs_dir</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">_sanitize_file_name</span><span class="p">(</span><span class="n">port_name</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">_single_io_file_name</span>
+
+
+<span class="k">def</span> <span class="nf">_try_get_object_by_name</span><span class="p">(</span><span class="n">obj_name</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Locates any Python object (type, module, function, global variable) by name&#39;&#39;&#39;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1">##Might be heavy since locate searches all Python modules</span>
+        <span class="c1">#from pydoc import locate</span>
+        <span class="c1">#return locate(obj_name) or obj_name</span>
+        <span class="kn">import</span> <span class="nn">builtins</span>
+        <span class="k">return</span> <span class="n">builtins</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">obj_name</span><span class="p">,</span> <span class="n">obj_name</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="k">return</span> <span class="n">obj_name</span>
+
+
+
+<span class="c1">#Holds the transformation functions that are called each time TaskSpec instance is created from a component. If there are multiple handlers, the last one is used.</span>
+<span class="n">_created_task_transformation_handler</span> <span class="o">=</span> <span class="p">[]</span>
+
+
+<span class="c1">#TODO: Move to the dsl.Pipeline context class</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">_dsl_bridge</span>
+<span class="n">_created_task_transformation_handler</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_dsl_bridge</span><span class="o">.</span><span class="n">create_container_op_from_task</span><span class="p">)</span>
+
+
+<span class="c1">#TODO: Refactor the function to make it shorter</span>
+<span class="k">def</span> <span class="nf">_create_task_factory_from_component_spec</span><span class="p">(</span><span class="n">component_spec</span><span class="p">:</span><span class="n">ComponentSpec</span><span class="p">,</span> <span class="n">component_filename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">component_ref</span><span class="p">:</span> <span class="n">ComponentReference</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">component_spec</span><span class="o">.</span><span class="n">name</span> <span class="ow">or</span> <span class="n">_default_component_name</span>
+
+    <span class="n">func_docstring_lines</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">component_spec</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+        <span class="n">func_docstring_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">component_spec</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">component_spec</span><span class="o">.</span><span class="n">description</span><span class="p">:</span>
+        <span class="n">func_docstring_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">component_spec</span><span class="o">.</span><span class="n">description</span><span class="p">)</span>
+    
+    <span class="n">inputs_list</span> <span class="o">=</span> <span class="n">component_spec</span><span class="o">.</span><span class="n">inputs</span> <span class="ow">or</span> <span class="p">[]</span> <span class="c1">#List[InputSpec]</span>
+    <span class="n">input_names</span> <span class="o">=</span> <span class="p">[</span><span class="nb">input</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="nb">input</span> <span class="ow">in</span> <span class="n">inputs_list</span><span class="p">]</span>
+
+    <span class="c1">#Creating the name translation tables : Original &lt;-&gt; Pythonic </span>
+    <span class="n">input_name_to_pythonic</span> <span class="o">=</span> <span class="n">generate_unique_name_conversion_table</span><span class="p">(</span><span class="n">input_names</span><span class="p">,</span> <span class="n">_sanitize_python_function_name</span><span class="p">)</span>
+    <span class="n">pythonic_name_to_input_name</span> <span class="o">=</span> <span class="p">{</span><span class="n">v</span><span class="p">:</span> <span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">input_name_to_pythonic</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+
+    <span class="k">if</span> <span class="n">component_ref</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">component_ref</span> <span class="o">=</span> <span class="n">ComponentReference</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">component_spec</span><span class="o">.</span><span class="n">name</span> <span class="ow">or</span> <span class="n">component_filename</span> <span class="ow">or</span> <span class="n">_default_component_name</span><span class="p">)</span>
+    <span class="n">component_ref</span><span class="o">.</span><span class="n">_component_spec</span> <span class="o">=</span> <span class="n">component_spec</span>
+
+    <span class="k">def</span> <span class="nf">create_task_from_component_and_arguments</span><span class="p">(</span><span class="n">pythonic_arguments</span><span class="p">):</span>
+        <span class="c1">#Converting the argument names and not passing None arguments</span>
+        <span class="n">valid_argument_types</span> <span class="o">=</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">GraphInputArgument</span><span class="p">,</span> <span class="n">TaskOutputArgument</span><span class="p">,</span> <span class="n">PipelineParam</span><span class="p">)</span> <span class="c1">#Hack for passed PipelineParams. TODO: Remove the hack once they&#39;re no longer passed here.</span>
+        <span class="n">arguments</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">pythonic_name_to_input_name</span><span class="p">[</span><span class="n">k</span><span class="p">]:</span> <span class="p">(</span><span class="n">v</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">valid_argument_types</span><span class="p">)</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">pythonic_arguments</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="p">}</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">arguments</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arguments</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">PipelineParam</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">kfp</span><span class="o">.</span><span class="n">TYPE_CHECK</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">input_spec</span> <span class="ow">in</span> <span class="n">component_spec</span><span class="o">.</span><span class="n">inputs</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">input_spec</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">key</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">arguments</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">param_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">check_types</span><span class="p">(</span><span class="n">arguments</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">param_type</span><span class="o">.</span><span class="n">to_dict_or_str</span><span class="p">(),</span> <span class="s1">&#39;&#39;</span> <span class="k">if</span> <span class="n">input_spec</span><span class="o">.</span><span class="n">type</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">input_spec</span><span class="o">.</span><span class="n">type</span><span class="p">):</span>
+                                <span class="k">raise</span> <span class="n">InconsistentTypeException</span><span class="p">(</span><span class="s1">&#39;Component &quot;&#39;</span> <span class="o">+</span> <span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;&quot; is expecting &#39;</span> <span class="o">+</span> <span class="n">key</span> <span class="o">+</span> <span class="s1">&#39; to be type(&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">input_spec</span><span class="o">.</span><span class="n">type</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;), but the passed argument is type(&#39;</span> <span class="o">+</span> <span class="n">arguments</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">param_type</span><span class="o">.</span><span class="n">serialize</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39;)&#39;</span><span class="p">)</span>
+                <span class="n">arguments</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">arguments</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+
+        <span class="n">task</span> <span class="o">=</span> <span class="n">TaskSpec</span><span class="p">(</span>
+            <span class="n">component_ref</span><span class="o">=</span><span class="n">component_ref</span><span class="p">,</span>
+            <span class="n">arguments</span><span class="o">=</span><span class="n">arguments</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">_created_task_transformation_handler</span><span class="p">:</span>
+            <span class="n">task</span> <span class="o">=</span> <span class="n">_created_task_transformation_handler</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">](</span><span class="n">task</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">task</span>
+
+    <span class="kn">import</span> <span class="nn">inspect</span>
+    <span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">_dynamic</span>
+
+    <span class="c1">#Reordering the inputs since in Python optional parameters must come after required parameters</span>
+    <span class="n">reordered_input_list</span> <span class="o">=</span> <span class="p">[</span><span class="nb">input</span> <span class="k">for</span> <span class="nb">input</span> <span class="ow">in</span> <span class="n">inputs_list</span> <span class="k">if</span> <span class="nb">input</span><span class="o">.</span><span class="n">default</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">input</span><span class="o">.</span><span class="n">optional</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="nb">input</span> <span class="k">for</span> <span class="nb">input</span> <span class="ow">in</span> <span class="n">inputs_list</span> <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">default</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">input</span><span class="o">.</span><span class="n">optional</span><span class="p">)]</span>
+    <span class="n">input_parameters</span>  <span class="o">=</span> <span class="p">[</span><span class="n">_dynamic</span><span class="o">.</span><span class="n">KwParameter</span><span class="p">(</span><span class="n">input_name_to_pythonic</span><span class="p">[</span><span class="n">port</span><span class="o">.</span><span class="n">name</span><span class="p">],</span> <span class="n">annotation</span><span class="o">=</span><span class="p">(</span><span class="n">_try_get_object_by_name</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">port</span><span class="o">.</span><span class="n">type</span><span class="p">))</span> <span class="k">if</span> <span class="n">port</span><span class="o">.</span><span class="n">type</span> <span class="k">else</span> <span class="n">inspect</span><span class="o">.</span><span class="n">Parameter</span><span class="o">.</span><span class="n">empty</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="n">port</span><span class="o">.</span><span class="n">default</span> <span class="k">if</span> <span class="n">port</span><span class="o">.</span><span class="n">default</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">(</span><span class="kc">None</span> <span class="k">if</span> <span class="n">port</span><span class="o">.</span><span class="n">optional</span> <span class="k">else</span> <span class="n">inspect</span><span class="o">.</span><span class="n">Parameter</span><span class="o">.</span><span class="n">empty</span><span class="p">))</span> <span class="k">for</span> <span class="n">port</span> <span class="ow">in</span> <span class="n">reordered_input_list</span><span class="p">]</span>
+    <span class="n">factory_function_parameters</span> <span class="o">=</span> <span class="n">input_parameters</span> <span class="c1">#Outputs are no longer part of the task factory function signature. The paths are always generated by the system.</span>
+    
+    <span class="k">return</span> <span class="n">_dynamic</span><span class="o">.</span><span class="n">create_function_from_parameters</span><span class="p">(</span>
+        <span class="n">create_task_from_component_and_arguments</span><span class="p">,</span>        
+        <span class="n">factory_function_parameters</span><span class="p">,</span>
+        <span class="n">documentation</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">func_docstring_lines</span><span class="p">),</span>
+        <span class="n">func_name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+        <span class="n">func_filename</span><span class="o">=</span><span class="n">component_filename</span>
+    <span class="p">)</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">Kubeflow Pipelines</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Google.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

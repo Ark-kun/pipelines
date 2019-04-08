@@ -1,0 +1,556 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>kfp.components.structures.kubernetes.v1 &#8212; Kubeflow Pipelines  documentation</title>
+    <link rel="stylesheet" href="../../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../../../" src="../../../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for kfp.components.structures.kubernetes.v1</h1><div class="highlight"><pre>
+<span></span><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;Container&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;PodArgoSubset&#39;</span><span class="p">,</span>
+<span class="p">]</span>
+
+
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">OrderedDict</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">from</span> <span class="nn">...modelbase</span> <span class="k">import</span> <span class="n">ModelBase</span>
+
+
+<span class="k">class</span> <span class="nc">EnvVar</span><span class="p">(</span><span class="n">ModelBase</span><span class="p">):</span>
+    <span class="n">_serialized_names</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;value_from&#39;</span><span class="p">:</span> <span class="s1">&#39;valueFrom&#39;</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">value</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="c1">#value_from: Optional[EnvVarSource] = None, #TODO: Add if needed</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
+
+
+<span class="k">class</span> <span class="nc">ExecAction</span><span class="p">(</span><span class="n">ModelBase</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+        <span class="n">command</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
+
+
+<span class="k">class</span> <span class="nc">Handler</span><span class="p">(</span><span class="n">ModelBase</span><span class="p">):</span>
+    <span class="n">_serialized_names</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;http_get&#39;</span><span class="p">:</span> <span class="s1">&#39;httpGet&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;tcp_socket&#39;</span><span class="p">:</span> <span class="s1">&#39;tcpSocket&#39;</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+        <span class="n">exec</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ExecAction</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="c1">#http_get: Optional[HTTPGetAction] = None, #TODO: Add if needed</span>
+        <span class="c1">#tcp_socket: Optional[TCPSocketAction] = None, #TODO: Add if needed</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
+
+
+<span class="k">class</span> <span class="nc">Lifecycle</span><span class="p">(</span><span class="n">ModelBase</span><span class="p">):</span>
+    <span class="n">_serialized_names</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;post_start&#39;</span><span class="p">:</span> <span class="s1">&#39;postStart&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;pre_stop&#39;</span><span class="p">:</span> <span class="s1">&#39;preStop&#39;</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+        <span class="n">post_start</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Handler</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">pre_stop</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Handler</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
+
+
+<span class="k">class</span> <span class="nc">VolumeMount</span><span class="p">(</span><span class="n">ModelBase</span><span class="p">):</span>
+    <span class="n">_serialized_names</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;mount_path&#39;</span><span class="p">:</span> <span class="s1">&#39;mountPath&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;mount_propagation&#39;</span><span class="p">:</span> <span class="s1">&#39;mountPropagation&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;read_only&#39;</span><span class="p">:</span> <span class="s1">&#39;readOnly&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;sub_path&#39;</span><span class="p">:</span> <span class="s1">&#39;subPath&#39;</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">mount_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">mount_propagation</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">read_only</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">sub_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
+
+
+<span class="k">class</span> <span class="nc">ResourceRequirements</span><span class="p">(</span><span class="n">ModelBase</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+        <span class="n">limits</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">requests</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
+
+
+<span class="k">class</span> <span class="nc">ContainerPort</span><span class="p">(</span><span class="n">ModelBase</span><span class="p">):</span>
+    <span class="n">_serialized_names</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;container_port&#39;</span><span class="p">:</span> <span class="s1">&#39;containerPort&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;host_ip&#39;</span><span class="p">:</span> <span class="s1">&#39;hostIP&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;host_port&#39;</span><span class="p">:</span> <span class="s1">&#39;hostPort&#39;</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+        <span class="n">container_port</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">host_ip</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">host_port</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">protocol</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
+
+
+<span class="k">class</span> <span class="nc">VolumeDevice</span><span class="p">(</span><span class="n">ModelBase</span><span class="p">):</span>
+    <span class="n">_serialized_names</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;device_path&#39;</span><span class="p">:</span> <span class="s1">&#39;devicePath&#39;</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+        <span class="n">device_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
+
+
+<span class="k">class</span> <span class="nc">Probe</span><span class="p">(</span><span class="n">ModelBase</span><span class="p">):</span>
+    <span class="n">_serialized_names</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;failure_threshold&#39;</span><span class="p">:</span> <span class="s1">&#39;failureThreshold&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;http_get&#39;</span><span class="p">:</span> <span class="s1">&#39;httpGet&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;initial_delay_seconds&#39;</span><span class="p">:</span> <span class="s1">&#39;initialDelaySeconds&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;period_seconds&#39;</span><span class="p">:</span> <span class="s1">&#39;periodSeconds&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;success_threshold&#39;</span><span class="p">:</span> <span class="s1">&#39;successThreshold&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;tcp_socket&#39;</span><span class="p">:</span> <span class="s1">&#39;tcpSocket&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;timeout_seconds&#39;</span><span class="p">:</span> <span class="s1">&#39;timeoutSeconds&#39;</span>
+    <span class="p">}</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+        <span class="n">exec</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ExecAction</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">failure_threshold</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="c1">#http_get: Optional[HTTPGetAction] = None, #TODO: Add if needed</span>
+        <span class="n">initial_delay_seconds</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">period_seconds</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">success_threshold</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="c1">#tcp_socket: Optional[TCPSocketAction] = None, #TODO: Add if needed</span>
+        <span class="n">timeout_seconds</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
+
+
+<span class="k">class</span> <span class="nc">SecurityContext</span><span class="p">(</span><span class="n">ModelBase</span><span class="p">):</span>
+    <span class="n">_serialized_names</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;allow_privilege_escalation&#39;</span><span class="p">:</span> <span class="s1">&#39;allowPrivilegeEscalation&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;capabilities&#39;</span><span class="p">:</span> <span class="s1">&#39;capabilities&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;privileged&#39;</span><span class="p">:</span> <span class="s1">&#39;privileged&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;read_only_root_filesystem&#39;</span><span class="p">:</span> <span class="s1">&#39;readOnlyRootFilesystem&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;run_as_group&#39;</span><span class="p">:</span> <span class="s1">&#39;runAsGroup&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;run_as_non_root&#39;</span><span class="p">:</span> <span class="s1">&#39;runAsNonRoot&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;run_as_user&#39;</span><span class="p">:</span> <span class="s1">&#39;runAsUser&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;se_linux_options&#39;</span><span class="p">:</span> <span class="s1">&#39;seLinuxOptions&#39;</span>
+    <span class="p">}</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+        <span class="n">allow_privilege_escalation</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="c1">#capabilities: Optional[Capabilities] = None, #TODO: Add if needed</span>
+        <span class="n">privileged</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">read_only_root_filesystem</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">run_as_group</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">run_as_non_root</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">run_as_user</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="c1">#se_linux_options: Optional[SELinuxOptions] = None, #TODO: Add if needed</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
+
+
+<div class="viewcode-block" id="Container"><a class="viewcode-back" href="../../../../../source/kfp.components.structures.kubernetes.html#kfp.components.structures.kubernetes.v1.Container">[docs]</a><span class="k">class</span> <span class="nc">Container</span><span class="p">(</span><span class="n">ModelBase</span><span class="p">):</span>
+    <span class="n">_serialized_names</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;env_from&#39;</span><span class="p">:</span> <span class="s1">&#39;envFrom&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;image_pull_policy&#39;</span><span class="p">:</span> <span class="s1">&#39;imagePullPolicy&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;liveness_probe&#39;</span><span class="p">:</span> <span class="s1">&#39;livenessProbe&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;readiness_probe&#39;</span><span class="p">:</span> <span class="s1">&#39;readinessProbe&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;security_context&#39;</span><span class="p">:</span> <span class="s1">&#39;securityContext&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;stdin_once&#39;</span><span class="p">:</span> <span class="s1">&#39;stdinOnce&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;termination_message_path&#39;</span><span class="p">:</span> <span class="s1">&#39;terminationMessagePath&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;termination_message_policy&#39;</span><span class="p">:</span> <span class="s1">&#39;terminationMessagePolicy&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;volume_devices&#39;</span><span class="p">:</span> <span class="s1">&#39;volumeDevices&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;volume_mounts&#39;</span><span class="p">:</span> <span class="s1">&#39;volumeMounts&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;working_dir&#39;</span><span class="p">:</span> <span class="s1">&#39;workingDir&#39;</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+        <span class="c1">#Better to set at Component level</span>
+        <span class="n">image</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">command</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">args</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">env</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">EnvVar</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+
+        <span class="n">working_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="c1">#Not really needed: container should have proper working dir set up</span>
+
+        <span class="n">lifecycle</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Lifecycle</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="c1">#Can be used to specify pre-exit commands to run TODO: Probably support at Component level.</span>
+
+        <span class="c1">#Better to set at Task level</span>
+        <span class="n">volume_mounts</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">VolumeMount</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">resources</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ResourceRequirements</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+
+        <span class="c1">#Might not be used a lot</span>
+        <span class="n">ports</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">ContainerPort</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="c1">#env_from: Optional[List[EnvFromSource]] = None, #TODO: Add if needed</span>
+        <span class="n">volume_devices</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">VolumeDevice</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+
+        <span class="c1">#Probably not needed</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="c1">#Required by k8s schema, but not Argo.</span>
+        <span class="n">image_pull_policy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">liveness_probe</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Probe</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">readiness_probe</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Probe</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">security_context</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">SecurityContext</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">stdin</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">stdin_once</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">termination_message_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">termination_message_policy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">tty</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span></div>
+
+
+<span class="c1">#class NodeAffinity(ModelBase):</span>
+<span class="c1">#    _serialized_names = {</span>
+<span class="c1">#        &#39;preferred_during_scheduling_ignored_during_execution&#39;: &#39;preferredDuringSchedulingIgnoredDuringExecution&#39;,</span>
+<span class="c1">#        &#39;required_during_scheduling_ignored_during_execution&#39;: &#39;requiredDuringSchedulingIgnoredDuringExecution&#39;,</span>
+<span class="c1">#    }</span>
+<span class="c1">#    def __init__(self,</span>
+<span class="c1">#        preferred_during_scheduling_ignored_during_execution: Optional[List[PreferredSchedulingTerm]] = None,</span>
+<span class="c1">#        required_during_scheduling_ignored_during_execution: Optional[NodeSelector] = None,</span>
+<span class="c1">#    ):</span>
+<span class="c1">#        super().__init__(locals())</span>
+
+
+<span class="c1">#class Affinity(ModelBase):</span>
+<span class="c1">#    _serialized_names = {</span>
+<span class="c1">#        &#39;node_affinity&#39;: &#39;nodeAffinity&#39;,</span>
+<span class="c1">#        &#39;pod_affinity&#39;: &#39;podAffinity&#39;,</span>
+<span class="c1">#        &#39;pod_anti_affinity&#39;: &#39;podAntiAffinity&#39;,</span>
+<span class="c1">#    }</span>
+<span class="c1">#    def __init__(self,</span>
+<span class="c1">#        node_affinity: Optional[NodeAffinity] = None,</span>
+<span class="c1">#        #pod_affinity: Optional[PodAffinity] = None, #TODO: Add if needed</span>
+<span class="c1">#        #pod_anti_affinity: Optional[PodAntiAffinity] = None, #TODO: Add if needed</span>
+<span class="c1">#    ):</span>
+<span class="c1">#        super().__init__(locals())</span>
+
+
+<span class="k">class</span> <span class="nc">Toleration</span><span class="p">(</span><span class="n">ModelBase</span><span class="p">):</span>
+    <span class="n">_serialized_names</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;toleration_seconds&#39;</span><span class="p">:</span> <span class="s1">&#39;tolerationSeconds&#39;</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+        <span class="n">effect</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">key</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">operator</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">toleration_seconds</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">value</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
+
+
+<span class="k">class</span> <span class="nc">KeyToPath</span><span class="p">(</span><span class="n">ModelBase</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+        <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">mode</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
+
+
+<span class="k">class</span> <span class="nc">SecretVolumeSource</span><span class="p">(</span><span class="n">ModelBase</span><span class="p">):</span>
+    <span class="n">_serialized_names</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;default_mode&#39;</span><span class="p">:</span> <span class="s1">&#39;defaultMode&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;secret_name&#39;</span><span class="p">:</span> <span class="s1">&#39;secretName&#39;</span>
+    <span class="p">}</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+        <span class="n">default_mode</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">items</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">KeyToPath</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">optional</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">secret_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
+
+
+<span class="k">class</span> <span class="nc">NFSVolumeSource</span><span class="p">(</span><span class="n">ModelBase</span><span class="p">):</span>
+    <span class="n">_serialized_names</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;read_only&#39;</span><span class="p">:</span> <span class="s1">&#39;readOnly&#39;</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+        <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">server</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">read_only</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
+
+
+<span class="k">class</span> <span class="nc">PersistentVolumeClaimVolumeSource</span><span class="p">(</span><span class="n">ModelBase</span><span class="p">):</span>
+    <span class="n">_serialized_names</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;claim_name&#39;</span><span class="p">:</span> <span class="s1">&#39;claimName&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;read_only&#39;</span><span class="p">:</span> <span class="s1">&#39;readOnly&#39;</span>
+    <span class="p">}</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+        <span class="n">claim_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">read_only</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
+
+
+<span class="k">class</span> <span class="nc">Volume</span><span class="p">(</span><span class="n">ModelBase</span><span class="p">):</span>
+    <span class="n">_serialized_names</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;aws_elastic_block_store&#39;</span><span class="p">:</span> <span class="s1">&#39;awsElasticBlockStore&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;azure_disk&#39;</span><span class="p">:</span> <span class="s1">&#39;azureDisk&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;azure_file&#39;</span><span class="p">:</span> <span class="s1">&#39;azureFile&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;cephfs&#39;</span><span class="p">:</span> <span class="s1">&#39;cephfs&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;cinder&#39;</span><span class="p">:</span> <span class="s1">&#39;cinder&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;config_map&#39;</span><span class="p">:</span> <span class="s1">&#39;configMap&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;downward_api&#39;</span><span class="p">:</span> <span class="s1">&#39;downwardAPI&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;empty_dir&#39;</span><span class="p">:</span> <span class="s1">&#39;emptyDir&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;fc&#39;</span><span class="p">:</span> <span class="s1">&#39;fc&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;flex_volume&#39;</span><span class="p">:</span> <span class="s1">&#39;flexVolume&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;flocker&#39;</span><span class="p">:</span> <span class="s1">&#39;flocker&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;gce_persistent_disk&#39;</span><span class="p">:</span> <span class="s1">&#39;gcePersistentDisk&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;git_repo&#39;</span><span class="p">:</span> <span class="s1">&#39;gitRepo&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;glusterfs&#39;</span><span class="p">:</span> <span class="s1">&#39;glusterfs&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;host_path&#39;</span><span class="p">:</span> <span class="s1">&#39;hostPath&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;iscsi&#39;</span><span class="p">:</span> <span class="s1">&#39;iscsi&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;nfs&#39;</span><span class="p">:</span> <span class="s1">&#39;nfs&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;persistent_volume_claim&#39;</span><span class="p">:</span> <span class="s1">&#39;persistentVolumeClaim&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;photon_persistent_disk&#39;</span><span class="p">:</span> <span class="s1">&#39;photonPersistentDisk&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;portworx_volume&#39;</span><span class="p">:</span> <span class="s1">&#39;portworxVolume&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;projected&#39;</span><span class="p">:</span> <span class="s1">&#39;projected&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;quobyte&#39;</span><span class="p">:</span> <span class="s1">&#39;quobyte&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;rbd&#39;</span><span class="p">:</span> <span class="s1">&#39;rbd&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;scale_io&#39;</span><span class="p">:</span> <span class="s1">&#39;scaleIO&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;secret&#39;</span><span class="p">:</span> <span class="s1">&#39;secret&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;storageos&#39;</span><span class="p">:</span> <span class="s1">&#39;storageos&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;vsphere_volume&#39;</span><span class="p">:</span> <span class="s1">&#39;vsphereVolume&#39;</span>
+    <span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">secret</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">SecretVolumeSource</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">nfs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">NFSVolumeSource</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">persistent_volume_claim</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PersistentVolumeClaimVolumeSource</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+
+        <span class="c1">#No validation for these volume types</span>
+        <span class="n">aws_elastic_block_store</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Mapping</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="c1">#AWSElasticBlockStoreVolumeSource,</span>
+        <span class="n">azure_disk</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Mapping</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="c1">#AzureDiskVolumeSource,</span>
+        <span class="n">azure_file</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Mapping</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="c1">#AzureFileVolumeSource,</span>
+        <span class="n">cephfs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Mapping</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="c1">#CephFSVolumeSource,</span>
+        <span class="n">cinder</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Mapping</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="c1">#CinderVolumeSource,</span>
+        <span class="n">config_map</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Mapping</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="c1">#ConfigMapVolumeSource,</span>
+        <span class="n">downward_api</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Mapping</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="c1">#DownwardAPIVolumeSource,</span>
+        <span class="n">empty_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Mapping</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="c1">#EmptyDirVolumeSource,</span>
+        <span class="n">fc</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Mapping</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="c1">#FCVolumeSource,</span>
+        <span class="n">flex_volume</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Mapping</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="c1">#FlexVolumeSource,</span>
+        <span class="n">flocker</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Mapping</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="c1">#FlockerVolumeSource,</span>
+        <span class="n">gce_persistent_disk</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Mapping</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="c1">#GCEPersistentDiskVolumeSource,</span>
+        <span class="n">git_repo</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Mapping</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="c1">#GitRepoVolumeSource,</span>
+        <span class="n">glusterfs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Mapping</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="c1">#GlusterfsVolumeSource,</span>
+        <span class="n">host_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Mapping</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="c1">#HostPathVolumeSource,</span>
+        <span class="n">iscsi</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Mapping</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="c1">#ISCSIVolumeSource,</span>
+        <span class="n">photon_persistent_disk</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Mapping</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="c1">#PhotonPersistentDiskVolumeSource,</span>
+        <span class="n">portworx_volume</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Mapping</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="c1">#PortworxVolumeSource,</span>
+        <span class="n">projected</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Mapping</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="c1">#ProjectedVolumeSource,</span>
+        <span class="n">quobyte</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Mapping</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="c1">#QuobyteVolumeSource,</span>
+        <span class="n">rbd</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Mapping</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="c1">#RBDVolumeSource,</span>
+        <span class="n">scale_io</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Mapping</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="c1">#ScaleIOVolumeSource,</span>
+        <span class="n">storageos</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Mapping</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="c1">#StorageOSVolumeSource,</span>
+        <span class="n">vsphere_volume</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Mapping</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="c1">#VsphereVirtualDiskVolumeSource,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
+
+
+<span class="k">class</span> <span class="nc">PodSpecArgoSubset</span><span class="p">(</span><span class="n">ModelBase</span><span class="p">):</span>
+    <span class="n">_serialized_names</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;active_deadline_seconds&#39;</span><span class="p">:</span> <span class="s1">&#39;activeDeadlineSeconds&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;affinity&#39;</span><span class="p">:</span> <span class="s1">&#39;affinity&#39;</span><span class="p">,</span>
+        <span class="c1">#&#39;automount_service_account_token&#39;: &#39;automountServiceAccountToken&#39;,</span>
+        <span class="c1">#&#39;containers&#39;: &#39;containers&#39;,</span>
+        <span class="c1">#&#39;dns_config&#39;: &#39;dnsConfig&#39;,</span>
+        <span class="c1">#&#39;dns_policy&#39;: &#39;dnsPolicy&#39;,</span>
+        <span class="c1">#&#39;host_aliases&#39;: &#39;hostAliases&#39;,</span>
+        <span class="c1">#&#39;host_ipc&#39;: &#39;hostIPC&#39;,</span>
+        <span class="c1">#&#39;host_network&#39;: &#39;hostNetwork&#39;,</span>
+        <span class="c1">#&#39;host_pid&#39;: &#39;hostPID&#39;,</span>
+        <span class="c1">#&#39;hostname&#39;: &#39;hostname&#39;,</span>
+        <span class="c1">#&#39;image_pull_secrets&#39;: &#39;imagePullSecrets&#39;,</span>
+        <span class="c1">#&#39;init_containers&#39;: &#39;initContainers&#39;,</span>
+        <span class="c1">#&#39;node_name&#39;: &#39;nodeName&#39;,</span>
+        <span class="s1">&#39;node_selector&#39;</span><span class="p">:</span> <span class="s1">&#39;nodeSelector&#39;</span><span class="p">,</span>
+        <span class="c1">#&#39;priority&#39;: &#39;priority&#39;,</span>
+        <span class="c1">#&#39;priority_class_name&#39;: &#39;priorityClassName&#39;,</span>
+        <span class="c1">#&#39;readiness_gates&#39;: &#39;readinessGates&#39;,</span>
+        <span class="c1">#&#39;restart_policy&#39;: &#39;restartPolicy&#39;,</span>
+        <span class="c1">#&#39;scheduler_name&#39;: &#39;schedulerName&#39;,</span>
+        <span class="c1">#&#39;security_context&#39;: &#39;securityContext&#39;,</span>
+        <span class="c1">#&#39;service_account&#39;: &#39;serviceAccount&#39;,</span>
+        <span class="c1">#&#39;service_account_name&#39;: &#39;serviceAccountName&#39;,</span>
+        <span class="c1">#&#39;share_process_namespace&#39;: &#39;shareProcessNamespace&#39;,</span>
+        <span class="c1">#&#39;subdomain&#39;: &#39;subdomain&#39;,</span>
+        <span class="c1">#&#39;termination_grace_period_seconds&#39;: &#39;terminationGracePeriodSeconds&#39;,</span>
+        <span class="s1">&#39;tolerations&#39;</span><span class="p">:</span> <span class="s1">&#39;tolerations&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;volumes&#39;</span><span class="p">:</span> <span class="s1">&#39;volumes&#39;</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+        <span class="n">active_deadline_seconds</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">affinity</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Mapping</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="c1">#Affinity, #No validation</span>
+        <span class="c1">#automount_service_account_token: Optional[bool] = None, #Not supported by Argo</span>
+        <span class="c1">#containers: Optional[List[Container]] = None, #Not supported by Argo</span>
+        <span class="c1">#dns_config: Optional[PodDNSConfig] = None, #Not supported by Argo</span>
+        <span class="c1">#dns_policy: Optional[str] = None, #Not supported by Argo</span>
+        <span class="c1">#host_aliases: Optional[List[HostAlias]] = None, #Not supported by Argo</span>
+        <span class="c1">#host_ipc: Optional[bool] = None, #Not supported by Argo</span>
+        <span class="c1">#host_network: Optional[bool] = None, #Not supported by Argo</span>
+        <span class="c1">#host_pid: Optional[bool] = None, #Not supported by Argo</span>
+        <span class="c1">#hostname: Optional[str] = None, #Not supported by Argo</span>
+        <span class="c1">#image_pull_secrets: Optional[List[LocalObjectReference]] = None, #Not supported by Argo</span>
+        <span class="c1">#init_containers: Optional[List[Container]] = None, #Not supported by Argo</span>
+        <span class="c1">#node_name: Optional[str] = None, #Not supported by Argo</span>
+        <span class="n">node_selector</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="c1">#priority: Optional[int] = None, #Not supported by Argo</span>
+        <span class="c1">#priority_class_name: Optional[str] = None, #Not supported by Argo</span>
+        <span class="c1">#readiness_gates: Optional[List[PodReadinessGate]] = None, #Not supported by Argo</span>
+        <span class="c1">#restart_policy: Optional[str] = None, #Not supported by Argo</span>
+        <span class="c1">#scheduler_name: Optional[str] = None, #Not supported by Argo</span>
+        <span class="c1">#security_context: Optional[PodSecurityContext] = None, #Not supported by Argo</span>
+        <span class="c1">#service_account: Optional[str] = None, #Not supported by Argo</span>
+        <span class="c1">#service_account_name: Optional[str] = None, #Not supported by Argo</span>
+        <span class="c1">#share_process_namespace: Optional[bool] = None, #Not supported by Argo</span>
+        <span class="c1">#subdomain: Optional[str] = None, #Not supported by Argo</span>
+        <span class="c1">#termination_grace_period_seconds: Optional[int] = None, #Not supported by Argo</span>
+        <span class="n">tolerations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Toleration</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">volumes</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Volume</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="c1">#Argo only supports volumes at the Workflow level</span>
+
+        <span class="c1">#+Argo features:</span>
+        <span class="c1">#+Metadata: ArgoMetadata? (Argo version)</span>
+        <span class="c1">#+RetryStrategy: ArgoRetryStrategy ~= k8s.JobSpec.backoffLimit</span>
+        <span class="c1">#+Parallelism: int</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
+
+
+<span class="k">class</span> <span class="nc">ObjectMetaArgoSubset</span><span class="p">(</span><span class="n">ModelBase</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+        <span class="n">annotations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">labels</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
+
+
+<div class="viewcode-block" id="PodArgoSubset"><a class="viewcode-back" href="../../../../../source/kfp.components.structures.kubernetes.html#kfp.components.structures.kubernetes.v1.PodArgoSubset">[docs]</a><span class="k">class</span> <span class="nc">PodArgoSubset</span><span class="p">(</span><span class="n">ModelBase</span><span class="p">):</span>
+    <span class="n">_serialized_names</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;api_version&#39;</span><span class="p">:</span> <span class="s1">&#39;apiVersion&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;kind&#39;</span><span class="p">:</span> <span class="s1">&#39;kind&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;metadata&#39;</span><span class="p">:</span> <span class="s1">&#39;metadata&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;spec&#39;</span><span class="p">:</span> <span class="s1">&#39;spec&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;status&#39;</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+        <span class="c1">#api_version: Optional[str] = None,</span>
+        <span class="c1">#kind: Optional[str] = None,</span>
+        <span class="c1">#metadata: Optional[ObjectMeta] = None,</span>
+        <span class="n">metadata</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ObjectMetaArgoSubset</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="c1">#spec: Optional[PodSpec] = None,</span>
+        <span class="n">spec</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PodSpecArgoSubset</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="c1">#status: Optional[PodStatus] = None,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../../index.html">Kubeflow Pipelines</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Google.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

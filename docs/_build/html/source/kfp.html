@@ -1,0 +1,227 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>kfp package &#8212; Kubeflow Pipelines  documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="kfp-package">
+<h1>kfp package<a class="headerlink" href="#kfp-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="kfp.compiler.html">kfp.compiler package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="kfp.compiler.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kfp.compiler.html#module-kfp.compiler.compiler">kfp.compiler.compiler module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kfp.compiler.html#module-kfp.compiler.main">kfp.compiler.main module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kfp.compiler.html#module-kfp.compiler">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="kfp.components.html">kfp.components package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="kfp.components.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="kfp.components.structures.html">kfp.components.structures package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="kfp.components.structures.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="kfp.components.structures.kubernetes.html">kfp.components.structures.kubernetes package</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="kfp.components.structures.kubernetes.html#submodules">Submodules</a></li>
+<li class="toctree-l6"><a class="reference internal" href="kfp.components.structures.kubernetes.html#module-kfp.components.structures.kubernetes.v1">kfp.components.structures.kubernetes.v1 module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="kfp.components.structures.kubernetes.html#module-kfp.components.structures.kubernetes">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="kfp.components.structures.html#module-kfp.components.structures">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="kfp.components.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kfp.components.html#module-kfp.components.modelbase">kfp.components.modelbase module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kfp.components.html#module-kfp.components">Module contents</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kfp.components.html#module-kfp.components._components">ZZZ</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="kfp.dsl.html">kfp.dsl package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="kfp.dsl.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kfp.dsl.html#module-kfp.dsl.types">kfp.dsl.types module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kfp.dsl.html#module-kfp.dsl">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="kfp.notebook.html">kfp.notebook package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="kfp.notebook.html#module-kfp.notebook">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-kfp.azure">
+<span id="kfp-azure-module"></span><h2>kfp.azure module<a class="headerlink" href="#module-kfp.azure" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="kfp.azure.use_azure_secret">
+<code class="descclassname">kfp.azure.</code><code class="descname">use_azure_secret</code><span class="sig-paren">(</span><em>secret_name='azcreds'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kfp/azure.html#use_azure_secret"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#kfp.azure.use_azure_secret" title="Permalink to this definition">¶</a></dt>
+<dd><p>An operator that configures the container to use Azure user credentials.</p>
+<p>The azcreds secret is created as part of the kubeflow deployment that
+stores the client ID and secrets for the kubeflow azure service principal.</p>
+<p>With this service principal, the container has a range of Azure APIs to
+access to.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-kfp.gcp">
+<span id="kfp-gcp-module"></span><h2>kfp.gcp module<a class="headerlink" href="#module-kfp.gcp" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="kfp.gcp.use_gcp_secret">
+<code class="descclassname">kfp.gcp.</code><code class="descname">use_gcp_secret</code><span class="sig-paren">(</span><em>secret_name='user-gcp-sa'</em>, <em>secret_file_path_in_volume='/user-gcp-sa.json'</em>, <em>volume_name='gcp-credentials'</em>, <em>secret_volume_mount_path='/secret/gcp-credentials'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kfp/gcp.html#use_gcp_secret"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#kfp.gcp.use_gcp_secret" title="Permalink to this definition">¶</a></dt>
+<dd><p>An operator that configures the container to use GCP service account.</p>
+<p>The user-gcp-sa secret is created as part of the kubeflow deployment that
+stores the access token for kubeflow user service account.</p>
+<p>With this service account, the container has a range of GCP APIs to
+access to. This service account is automatically created as part of the
+kubeflow deployment.</p>
+<p>For the list of the GCP APIs this service account can access to, check
+<a class="reference external" href="https://github.com/kubeflow/kubeflow/blob/7b0db0d92d65c0746ac52b000cbc290dac7c62b1/deployment/gke/deployment_manager_configs/iam_bindings_template.yaml#L18">https://github.com/kubeflow/kubeflow/blob/7b0db0d92d65c0746ac52b000cbc290dac7c62b1/deployment/gke/deployment_manager_configs/iam_bindings_template.yaml#L18</a></p>
+<p>If you want to call the GCP APIs in a different project, grant the kf-user
+service account access permission.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kfp.gcp.use_tpu">
+<code class="descclassname">kfp.gcp.</code><code class="descname">use_tpu</code><span class="sig-paren">(</span><em>tpu_cores: int</em>, <em>tpu_resource: str</em>, <em>tf_version: str</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kfp/gcp.html#use_tpu"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#kfp.gcp.use_tpu" title="Permalink to this definition">¶</a></dt>
+<dd><p>An operator that configures GCP TPU spec in a container op.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>tpu_cores</strong> – Required. The number of cores of TPU resource.
+For example, the value can be ‘8’, ‘32’, ‘128’, etc.
+Check more details at: <a class="reference external" href="https://cloud.google.com/tpu/docs/kubernetes-engine-setup#pod-spec">https://cloud.google.com/tpu/docs/kubernetes-engine-setup#pod-spec</a>.</li>
+<li><strong>tpu_resource</strong> – Required. The resource name of the TPU resource.
+For example, the value can be ‘v2’, ‘preemptible-v1’, ‘v3’ or ‘preemptible-v3’.
+Check more details at: <a class="reference external" href="https://cloud.google.com/tpu/docs/kubernetes-engine-setup#pod-spec">https://cloud.google.com/tpu/docs/kubernetes-engine-setup#pod-spec</a>.</li>
+<li><strong>tf_version</strong> – Required. The TensorFlow version that the TPU nodes use.
+For example, the value can be ‘1.12’, ‘1.11’, ‘1.9’ or ‘1.8’.
+Check more details at: <a class="reference external" href="https://cloud.google.com/tpu/docs/supported-versions">https://cloud.google.com/tpu/docs/supported-versions</a>.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-kfp.onprem">
+<span id="kfp-onprem-module"></span><h2>kfp.onprem module<a class="headerlink" href="#module-kfp.onprem" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="kfp.onprem.mount_pvc">
+<code class="descclassname">kfp.onprem.</code><code class="descname">mount_pvc</code><span class="sig-paren">(</span><em>pvc_name='pipeline-claim'</em>, <em>volume_name='pipeline'</em>, <em>volume_mount_path='/mnt/pipeline'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kfp/onprem.html#mount_pvc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#kfp.onprem.mount_pvc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Modifier function to apply to a Container Op to simplify volume, volume mount addition and
+enable better reuse of volumes, volume claims across container ops.
+Usage:</p>
+<blockquote>
+<div>train = train_op(…)
+train.apply(mount_pvc(‘claim-name’, ‘pipeline’, ‘/mnt/pipeline’))</div></blockquote>
+</dd></dl>
+
+</div>
+<div class="section" id="module-kfp">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-kfp" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">Kubeflow Pipelines</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Google.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/source/kfp.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

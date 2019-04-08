@@ -1,0 +1,191 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>kfp.components._component_store &#8212; Kubeflow Pipelines  documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for kfp.components._component_store</h1><div class="highlight"><pre>
+<span></span><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;ComponentStore&#39;</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="k">import</span> <span class="n">Path</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">_components</span> <span class="k">as</span> <span class="n">comp</span>
+
+<div class="viewcode-block" id="ComponentStore"><a class="viewcode-back" href="../../../source/kfp.components.html#kfp.components._component_store.ComponentStore">[docs]</a><span class="k">class</span> <span class="nc">ComponentStore</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">local_search_paths</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">url_search_prefixes</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">local_search_paths</span> <span class="o">=</span> <span class="n">local_search_paths</span> <span class="ow">or</span> <span class="p">[</span><span class="s1">&#39;.&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">url_search_prefixes</span> <span class="o">=</span> <span class="n">url_search_prefixes</span> <span class="ow">or</span> <span class="p">[]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_component_file_name</span> <span class="o">=</span> <span class="s1">&#39;component.yaml&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_digests_subpath</span> <span class="o">=</span> <span class="s1">&#39;versions/sha256&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tags_subpath</span> <span class="o">=</span> <span class="s1">&#39;versions/tags&#39;</span>
+
+<div class="viewcode-block" id="ComponentStore.load_component_from_url"><a class="viewcode-back" href="../../../source/kfp.components.html#kfp.components._component_store.ComponentStore.load_component_from_url">[docs]</a>    <span class="k">def</span> <span class="nf">load_component_from_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">comp</span><span class="o">.</span><span class="n">load_component_from_url</span><span class="p">(</span><span class="n">url</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ComponentStore.load_component_from_file"><a class="viewcode-back" href="../../../source/kfp.components.html#kfp.components._component_store.ComponentStore.load_component_from_file">[docs]</a>    <span class="k">def</span> <span class="nf">load_component_from_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">comp</span><span class="o">.</span><span class="n">load_component_from_file</span><span class="p">(</span><span class="n">path</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ComponentStore.load_component"><a class="viewcode-back" href="../../../source/kfp.components.html#kfp.components._component_store.ComponentStore.load_component">[docs]</a>    <span class="k">def</span> <span class="nf">load_component</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">digest</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Loads component local file or URL and creates a task factory function</span>
+
+<span class="sd">        Search locations:</span>
+<span class="sd">        &lt;local-search-path&gt;/&lt;name&gt;/component.yaml</span>
+<span class="sd">        &lt;url-search-prefix&gt;/&lt;name&gt;/component.yaml</span>
+
+<span class="sd">        If the digest is specified, then the search locations are:</span>
+<span class="sd">        &lt;local-search-path&gt;/&lt;name&gt;/versions/sha256/&lt;digest&gt;</span>
+<span class="sd">        &lt;url-search-prefix&gt;/&lt;name&gt;/versions/sha256/&lt;digest&gt;</span>
+
+<span class="sd">        If the tag is specified, then the search locations are:</span>
+<span class="sd">        &lt;local-search-path&gt;/&lt;name&gt;/versions/tags/&lt;digest&gt;</span>
+<span class="sd">        &lt;url-search-prefix&gt;/&lt;name&gt;/versions/tags/&lt;digest&gt;</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name:   Component name used to search and load the component artifact containing the component definition.</span>
+<span class="sd">                    Component name usually has the following form: group/subgroup/component</span>
+<span class="sd">            digest: Strict component version. SHA256 hash digest of the component artifact file. Can be used to load a specific component version so that the pipeline is reproducible.</span>
+<span class="sd">            tag:    Version tag. Can be used to load component version from a specific branch. The version of the component referenced by a tag can change in future.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A factory function with a strongly-typed signature.</span>
+<span class="sd">            Once called with the required arguments, the factory constructs a pipeline task instance (ContainerOp).</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="c1">#This function should be called load_task_factory since it returns a factory function.</span>
+        <span class="c1">#The real load_component function should produce an object with component properties (e.g. name, description, inputs/outputs).</span>
+        <span class="c1">#TODO: Change this function to return component spec object but it should be callable to construct tasks.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">name</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;name is required&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Component name should not start or end with slash: &quot;</span><span class="si">{}</span><span class="s1">&quot;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
+
+        <span class="n">tried_locations</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">if</span> <span class="n">digest</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">tag</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Cannot specify both tag and digest&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">digest</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">path_suffix</span> <span class="o">=</span> <span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_digests_subpath</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">digest</span>
+        <span class="k">elif</span> <span class="n">tag</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">path_suffix</span> <span class="o">=</span> <span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tags_subpath</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">tag</span>
+            <span class="c1">#TODO: Handle symlinks in GIT URLs</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">path_suffix</span> <span class="o">=</span> <span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_component_file_name</span>
+
+        <span class="c1">#Trying local search paths</span>
+        <span class="k">for</span> <span class="n">local_search_path</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">local_search_paths</span><span class="p">:</span>
+            <span class="n">component_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">local_search_path</span><span class="p">,</span> <span class="n">path_suffix</span><span class="p">)</span>
+            <span class="n">tried_locations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">component_path</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">component_path</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+                <span class="k">return</span> <span class="n">comp</span><span class="o">.</span><span class="n">load_component_from_file</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">component_path</span><span class="p">))</span>
+
+        <span class="c1">#Trying URL prefixes</span>
+        <span class="k">for</span> <span class="n">url_search_prefix</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">url_search_prefixes</span><span class="p">:</span>
+            <span class="n">url</span> <span class="o">=</span> <span class="n">url_search_prefix</span> <span class="o">+</span> <span class="n">path_suffix</span>
+            <span class="n">tried_locations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span> <span class="c1">#Does not throw exceptions on bad status, but throws on dead domains and malformed URLs. Should we log those cases?</span>
+                <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">comp</span><span class="o">.</span><span class="n">_load_component_from_yaml_or_zip_bytes</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
+
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;Component </span><span class="si">{}</span><span class="s1"> was not found. Tried the following locations:</span><span class="se">\n</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tried_locations</span><span class="p">)))</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">Kubeflow Pipelines</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Google.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

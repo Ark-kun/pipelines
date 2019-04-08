@@ -1,0 +1,369 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>kfp.components package &#8212; Kubeflow Pipelines  documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="kfp-components-package">
+<h1>kfp.components package<a class="headerlink" href="#kfp-components-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="kfp.components.structures.html">kfp.components.structures package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="kfp.components.structures.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="kfp.components.structures.kubernetes.html">kfp.components.structures.kubernetes package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="kfp.components.structures.kubernetes.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kfp.components.structures.kubernetes.html#module-kfp.components.structures.kubernetes.v1">kfp.components.structures.kubernetes.v1 module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kfp.components.structures.kubernetes.html#module-kfp.components.structures.kubernetes">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="kfp.components.structures.html#module-kfp.components.structures">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-kfp.components.modelbase">
+<span id="kfp-components-modelbase-module"></span><h2>kfp.components.modelbase module<a class="headerlink" href="#module-kfp.components.modelbase" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="kfp.components.modelbase.ModelBase">
+<em class="property">class </em><code class="descclassname">kfp.components.modelbase.</code><code class="descname">ModelBase</code><span class="sig-paren">(</span><em>args</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kfp/components/modelbase.html#ModelBase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#kfp.components.modelbase.ModelBase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Base class for types that can be converted to JSON-like dict structures or constructed from such structures.
+The object fields, their types and default values are taken from the __init__ method arguments.
+Override the _serialized_names mapping to control the key names of the serialized structures.</p>
+<p>The derived class objects will have the .from_struct and .to_struct methods for conversion to or from structure. The base class constructor accepts the arguments map, checks the argument types and sets the object field values.</p>
+<p>Example derived class:</p>
+<dl class="docutils">
+<dt>class TaskSpec(ModelBase):</dt>
+<dd><dl class="first docutils">
+<dt>_serialized_names = {</dt>
+<dd>‘component_ref’: ‘componentRef’,
+‘is_enabled’: ‘isEnabled’,</dd>
+</dl>
+<p>}</p>
+<dl class="last docutils">
+<dt>def __init__(self,</dt>
+<dd>component_ref: ComponentReference,
+arguments: Optional[Mapping[str, ArgumentType]] = None,
+is_enabled: Optional[Union[ArgumentType, EqualsPredicate, NotEqualsPredicate]] = None, #Optional property with default value</dd>
+<dt>):</dt>
+<dd>super().__init__(locals()) #Calling the ModelBase constructor to check the argument types and set the object field values.</dd>
+</dl>
+</dd>
+</dl>
+<p>task_spec = TaskSpec.from_struct(“{‘componentRef’: {…}, ‘isEnabled: {‘and’: {…}}}”) # = instance of TaskSpec
+task_struct = task_spec.to_struct() #= “{‘componentRef’: {…}, ‘isEnabled: {‘and’: {…}}}”</p>
+<dl class="classmethod">
+<dt id="kfp.components.modelbase.ModelBase.from_struct">
+<em class="property">classmethod </em><code class="descname">from_struct</code><span class="sig-paren">(</span><em>struct: Mapping[KT, VT_co]</em><span class="sig-paren">)</span> &#x2192; T<a class="reference internal" href="../_modules/kfp/components/modelbase.html#ModelBase.from_struct"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#kfp.components.modelbase.ModelBase.from_struct" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="kfp.components.modelbase.ModelBase.to_struct">
+<code class="descname">to_struct</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; Mapping[KT, VT_co]<a class="reference internal" href="../_modules/kfp/components/modelbase.html#ModelBase.to_struct"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#kfp.components.modelbase.ModelBase.to_struct" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-kfp.components">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-kfp.components" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-kfp.components._components">
+<span id="zzz"></span><h2>ZZZ<a class="headerlink" href="#module-kfp.components._components" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="kfp.components._components.load_component">
+<code class="descclassname">kfp.components._components.</code><code class="descname">load_component</code><span class="sig-paren">(</span><em>filename=None</em>, <em>url=None</em>, <em>text=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kfp/components/_components.html#load_component"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#kfp.components._components.load_component" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads component from text, file or URL and creates a task factory function</p>
+<p>Only one argument should be specified.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>filename</strong> – Path of local file containing the component definition.</li>
+<li><strong>url</strong> – The URL of the component file data</li>
+<li><strong>text</strong> – A string containing the component file data.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A factory function with a strongly-typed signature.
+Once called with the required arguments, the factory constructs a pipeline task instance (ContainerOp).</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="kfp.components._components.load_component_from_text">
+<code class="descclassname">kfp.components._components.</code><code class="descname">load_component_from_text</code><span class="sig-paren">(</span><em>text</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kfp/components/_components.html#load_component_from_text"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#kfp.components._components.load_component_from_text" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads component from text and creates a task factory function</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>text</strong> – A string containing the component file data.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A factory function with a strongly-typed signature.
+Once called with the required arguments, the factory constructs a pipeline task instance (ContainerOp).</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="kfp.components._components.load_component_from_url">
+<code class="descclassname">kfp.components._components.</code><code class="descname">load_component_from_url</code><span class="sig-paren">(</span><em>url</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kfp/components/_components.html#load_component_from_url"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#kfp.components._components.load_component_from_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads component from URL and creates a task factory function</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>url</strong> – The URL of the component file data</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A factory function with a strongly-typed signature.
+Once called with the required arguments, the factory constructs a pipeline task instance (ContainerOp).</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="kfp.components._components.load_component_from_file">
+<code class="descclassname">kfp.components._components.</code><code class="descname">load_component_from_file</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kfp/components/_components.html#load_component_from_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#kfp.components._components.load_component_from_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads component from file and creates a task factory function</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>filename</strong> – Path of local file containing the component definition.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A factory function with a strongly-typed signature.
+Once called with the required arguments, the factory constructs a pipeline task instance (ContainerOp).</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<span class="target" id="module-kfp.components._python_op"></span><dl class="function">
+<dt id="kfp.components._python_op.func_to_container_op">
+<code class="descclassname">kfp.components._python_op.</code><code class="descname">func_to_container_op</code><span class="sig-paren">(</span><em>func</em>, <em>output_component_file=None</em>, <em>base_image='tensorflow/tensorflow:1.11.0-py3'</em>, <em>extra_code=''</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kfp/components/_python_op.html#func_to_container_op"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#kfp.components._python_op.func_to_container_op" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a Python function to a component and returns a task (ContainerOp) factory</p>
+<p>Function docstring is used as component description.
+Argument and return annotations are used as component input/output types.
+To declare a function with multiple return values, use the NamedTuple return annotation syntax:</p>
+<blockquote>
+<div><p>from typing import NamedTuple
+def add_multiply_two_numbers(a: float, b: float) -&gt; NamedTuple(‘DummyName’, [(‘sum’, float), (‘product’, float)]):</p>
+<blockquote>
+<div>“”“Returns sum and product of two arguments”“”
+return (a + b, a * b)</div></blockquote>
+</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>func</strong> – The python function to convert</li>
+<li><strong>base_image</strong> – Optional. Specify a custom Docker container image to use in the component. For lightweight components, the image needs to have python 3.5+. Default is tensorflow/tensorflow:1.11.0-py3
+Note: The image can also be specified by decorating the function with the &#64;python_component decorator. If different base images are explicitly specified in both places, an error is raised.</li>
+<li><strong>output_component_file</strong> – Optional. Write a component definition to a local file. Can be used for sharing.</li>
+<li><strong>extra_code</strong> – Optional. Extra code to add before the function code. Can be used as workaround to define types used in function signature.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A factory function with a strongly-typed signature taken from the python function.
+Once called with the required arguments, the factory constructs a pipeline task instance (ContainerOp) that can run the original function in a container.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="kfp.components._python_op.func_to_component_text">
+<code class="descclassname">kfp.components._python_op.</code><code class="descname">func_to_component_text</code><span class="sig-paren">(</span><em>func</em>, <em>extra_code=''</em>, <em>base_image='tensorflow/tensorflow:1.11.0-py3'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kfp/components/_python_op.html#func_to_component_text"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#kfp.components._python_op.func_to_component_text" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a Python function to a component definition and returns its textual representation</p>
+<p>Function docstring is used as component description.
+Argument and return annotations are used as component input/output types.
+To declare a function with multiple return values, use the NamedTuple return annotation syntax:</p>
+<blockquote>
+<div><p>from typing import NamedTuple
+def add_multiply_two_numbers(a: float, b: float) -&gt; NamedTuple(‘DummyName’, [(‘sum’, float), (‘product’, float)]):</p>
+<blockquote>
+<div>“”“Returns sum and product of two arguments”“”
+return (a + b, a * b)</div></blockquote>
+</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>func</strong> – The python function to convert</li>
+<li><strong>base_image</strong> – Optional. Specify a custom Docker container image to use in the component. For lightweight components, the image needs to have python 3.5+. Default is tensorflow/tensorflow:1.11.0-py3
+Note: The image can also be specified by decorating the function with the &#64;python_component decorator. If different base images are explicitly specified in both places, an error is raised.</li>
+<li><strong>extra_code</strong> – Optional. Extra code to add before the function code. Can be used as workaround to define types used in function signature.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Textual representation of a component definition</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<span class="target" id="module-kfp.components._component_store"></span><dl class="class">
+<dt id="kfp.components._component_store.ComponentStore">
+<em class="property">class </em><code class="descclassname">kfp.components._component_store.</code><code class="descname">ComponentStore</code><span class="sig-paren">(</span><em>local_search_paths=None</em>, <em>url_search_prefixes=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kfp/components/_component_store.html#ComponentStore"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#kfp.components._component_store.ComponentStore" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="kfp.components._component_store.ComponentStore.load_component">
+<code class="descname">load_component</code><span class="sig-paren">(</span><em>name</em>, <em>digest=None</em>, <em>tag=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kfp/components/_component_store.html#ComponentStore.load_component"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#kfp.components._component_store.ComponentStore.load_component" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads component local file or URL and creates a task factory function</p>
+<p>Search locations:
+&lt;local-search-path&gt;/&lt;name&gt;/component.yaml
+&lt;url-search-prefix&gt;/&lt;name&gt;/component.yaml</p>
+<p>If the digest is specified, then the search locations are:
+&lt;local-search-path&gt;/&lt;name&gt;/versions/sha256/&lt;digest&gt;
+&lt;url-search-prefix&gt;/&lt;name&gt;/versions/sha256/&lt;digest&gt;</p>
+<p>If the tag is specified, then the search locations are:
+&lt;local-search-path&gt;/&lt;name&gt;/versions/tags/&lt;digest&gt;
+&lt;url-search-prefix&gt;/&lt;name&gt;/versions/tags/&lt;digest&gt;</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>name</strong> – Component name used to search and load the component artifact containing the component definition.
+Component name usually has the following form: group/subgroup/component</li>
+<li><strong>digest</strong> – Strict component version. SHA256 hash digest of the component artifact file. Can be used to load a specific component version so that the pipeline is reproducible.</li>
+<li><strong>tag</strong> – Version tag. Can be used to load component version from a specific branch. The version of the component referenced by a tag can change in future.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A factory function with a strongly-typed signature.
+Once called with the required arguments, the factory constructs a pipeline task instance (ContainerOp).</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="kfp.components._component_store.ComponentStore.load_component_from_file">
+<code class="descname">load_component_from_file</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kfp/components/_component_store.html#ComponentStore.load_component_from_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#kfp.components._component_store.ComponentStore.load_component_from_file" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="kfp.components._component_store.ComponentStore.load_component_from_url">
+<code class="descname">load_component_from_url</code><span class="sig-paren">(</span><em>url</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kfp/components/_component_store.html#ComponentStore.load_component_from_url"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#kfp.components._component_store.ComponentStore.load_component_from_url" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">Kubeflow Pipelines</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Google.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/source/kfp.components.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

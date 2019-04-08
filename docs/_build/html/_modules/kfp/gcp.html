@@ -1,0 +1,188 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>kfp.gcp &#8212; Kubeflow Pipelines  documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for kfp.gcp</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2018 Google LLC</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#      http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<div class="viewcode-block" id="use_gcp_secret"><a class="viewcode-back" href="../../source/kfp.html#kfp.gcp.use_gcp_secret">[docs]</a><span class="k">def</span> <span class="nf">use_gcp_secret</span><span class="p">(</span><span class="n">secret_name</span><span class="o">=</span><span class="s1">&#39;user-gcp-sa&#39;</span><span class="p">,</span> <span class="n">secret_file_path_in_volume</span><span class="o">=</span><span class="s1">&#39;/user-gcp-sa.json&#39;</span><span class="p">,</span> <span class="n">volume_name</span><span class="o">=</span><span class="s1">&#39;gcp-credentials&#39;</span><span class="p">,</span> <span class="n">secret_volume_mount_path</span><span class="o">=</span><span class="s1">&#39;/secret/gcp-credentials&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;An operator that configures the container to use GCP service account.</span>
+
+<span class="sd">        The user-gcp-sa secret is created as part of the kubeflow deployment that</span>
+<span class="sd">        stores the access token for kubeflow user service account.</span>
+
+<span class="sd">        With this service account, the container has a range of GCP APIs to</span>
+<span class="sd">        access to. This service account is automatically created as part of the</span>
+<span class="sd">        kubeflow deployment.</span>
+
+<span class="sd">        For the list of the GCP APIs this service account can access to, check</span>
+<span class="sd">        https://github.com/kubeflow/kubeflow/blob/7b0db0d92d65c0746ac52b000cbc290dac7c62b1/deployment/gke/deployment_manager_configs/iam_bindings_template.yaml#L18</span>
+
+<span class="sd">        If you want to call the GCP APIs in a different project, grant the kf-user</span>
+<span class="sd">        service account access permission.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">_use_gcp_secret</span><span class="p">(</span><span class="n">task</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">kubernetes</span> <span class="k">import</span> <span class="n">client</span> <span class="k">as</span> <span class="n">k8s_client</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">task</span>
+                <span class="o">.</span><span class="n">add_volume</span><span class="p">(</span>
+                    <span class="n">k8s_client</span><span class="o">.</span><span class="n">V1Volume</span><span class="p">(</span>
+                        <span class="n">name</span><span class="o">=</span><span class="n">volume_name</span><span class="p">,</span>
+                        <span class="n">secret</span><span class="o">=</span><span class="n">k8s_client</span><span class="o">.</span><span class="n">V1SecretVolumeSource</span><span class="p">(</span>
+                            <span class="n">secret_name</span><span class="o">=</span><span class="n">secret_name</span><span class="p">,</span>
+                        <span class="p">)</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+                <span class="o">.</span><span class="n">add_volume_mount</span><span class="p">(</span>
+                    <span class="n">k8s_client</span><span class="o">.</span><span class="n">V1VolumeMount</span><span class="p">(</span>
+                        <span class="n">name</span><span class="o">=</span><span class="n">volume_name</span><span class="p">,</span>
+                        <span class="n">mount_path</span><span class="o">=</span><span class="n">secret_volume_mount_path</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+                <span class="o">.</span><span class="n">add_env_variable</span><span class="p">(</span>
+                    <span class="n">k8s_client</span><span class="o">.</span><span class="n">V1EnvVar</span><span class="p">(</span>
+                        <span class="n">name</span><span class="o">=</span><span class="s1">&#39;GOOGLE_APPLICATION_CREDENTIALS&#39;</span><span class="p">,</span>
+                        <span class="n">value</span><span class="o">=</span><span class="n">secret_volume_mount_path</span> <span class="o">+</span> <span class="n">secret_file_path_in_volume</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+                <span class="o">.</span><span class="n">add_env_variable</span><span class="p">(</span>
+                    <span class="n">k8s_client</span><span class="o">.</span><span class="n">V1EnvVar</span><span class="p">(</span>
+                        <span class="n">name</span><span class="o">=</span><span class="s1">&#39;CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE&#39;</span><span class="p">,</span>
+                        <span class="n">value</span><span class="o">=</span><span class="n">secret_volume_mount_path</span> <span class="o">+</span> <span class="n">secret_file_path_in_volume</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="p">)</span> <span class="c1"># Set GCloud Credentials by using the env var override.</span>
+                  <span class="c1"># TODO: Is there a better way for GCloud to pick up the credential?</span>
+        <span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">_use_gcp_secret</span></div>
+
+<div class="viewcode-block" id="use_tpu"><a class="viewcode-back" href="../../source/kfp.html#kfp.gcp.use_tpu">[docs]</a><span class="k">def</span> <span class="nf">use_tpu</span><span class="p">(</span><span class="n">tpu_cores</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">tpu_resource</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">tf_version</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;An operator that configures GCP TPU spec in a container op.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      tpu_cores: Required. The number of cores of TPU resource. </span>
+<span class="sd">        For example, the value can be &#39;8&#39;, &#39;32&#39;, &#39;128&#39;, etc.</span>
+<span class="sd">        Check more details at: https://cloud.google.com/tpu/docs/kubernetes-engine-setup#pod-spec.</span>
+<span class="sd">      tpu_resource: Required. The resource name of the TPU resource. </span>
+<span class="sd">        For example, the value can be &#39;v2&#39;, &#39;preemptible-v1&#39;, &#39;v3&#39; or &#39;preemptible-v3&#39;.</span>
+<span class="sd">        Check more details at: https://cloud.google.com/tpu/docs/kubernetes-engine-setup#pod-spec.</span>
+<span class="sd">      tf_version: Required. The TensorFlow version that the TPU nodes use.</span>
+<span class="sd">        For example, the value can be &#39;1.12&#39;, &#39;1.11&#39;, &#39;1.9&#39; or &#39;1.8&#39;.</span>
+<span class="sd">        Check more details at: https://cloud.google.com/tpu/docs/supported-versions.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">_set_tpu_spec</span><span class="p">(</span><span class="n">task</span><span class="p">):</span>
+        <span class="n">task</span><span class="o">.</span><span class="n">add_pod_annotation</span><span class="p">(</span><span class="s1">&#39;tf-version.cloud-tpus.google.com&#39;</span><span class="p">,</span> <span class="n">tf_version</span><span class="p">)</span>
+        <span class="n">task</span><span class="o">.</span><span class="n">add_resource_limit</span><span class="p">(</span><span class="s1">&#39;cloud-tpus.google.com/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tpu_resource</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">tpu_cores</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">task</span>
+
+    <span class="k">return</span> <span class="n">_set_tpu_spec</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">Kubeflow Pipelines</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Google.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -12,6 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from ._components import *
-from ._python_op import *
-from ._component_store import *
+from kfp.components._components import *
+from kfp.components._python_op import *
+from kfp.components._component_store import *

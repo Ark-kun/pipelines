@@ -1,0 +1,125 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>kfp.components.structures.kubernetes package &#8212; Kubeflow Pipelines  documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="kfp-components-structures-kubernetes-package">
+<h1>kfp.components.structures.kubernetes package<a class="headerlink" href="#kfp-components-structures-kubernetes-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-kfp.components.structures.kubernetes.v1">
+<span id="kfp-components-structures-kubernetes-v1-module"></span><h2>kfp.components.structures.kubernetes.v1 module<a class="headerlink" href="#module-kfp.components.structures.kubernetes.v1" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="kfp.components.structures.kubernetes.v1.Container">
+<em class="property">class </em><code class="descclassname">kfp.components.structures.kubernetes.v1.</code><code class="descname">Container</code><span class="sig-paren">(</span><em>image: Optional[str] = None</em>, <em>command: Optional[List[str]] = None</em>, <em>args: Optional[List[str]] = None</em>, <em>env: Optional[List[kfp.components.structures.kubernetes.v1.EnvVar]] = None</em>, <em>working_dir: Optional[str] = None</em>, <em>lifecycle: Optional[kfp.components.structures.kubernetes.v1.Lifecycle] = None</em>, <em>volume_mounts: Optional[List[kfp.components.structures.kubernetes.v1.VolumeMount]] = None</em>, <em>resources: Optional[kfp.components.structures.kubernetes.v1.ResourceRequirements] = None</em>, <em>ports: Optional[List[kfp.components.structures.kubernetes.v1.ContainerPort]] = None</em>, <em>volume_devices: Optional[List[kfp.components.structures.kubernetes.v1.VolumeDevice]] = None</em>, <em>name: Optional[str] = None</em>, <em>image_pull_policy: Optional[str] = None</em>, <em>liveness_probe: Optional[kfp.components.structures.kubernetes.v1.Probe] = None</em>, <em>readiness_probe: Optional[kfp.components.structures.kubernetes.v1.Probe] = None</em>, <em>security_context: Optional[kfp.components.structures.kubernetes.v1.SecurityContext] = None</em>, <em>stdin: Optional[bool] = None</em>, <em>stdin_once: Optional[bool] = None</em>, <em>termination_message_path: Optional[str] = None</em>, <em>termination_message_policy: Optional[str] = None</em>, <em>tty: Optional[bool] = None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kfp/components/structures/kubernetes/v1.html#Container"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#kfp.components.structures.kubernetes.v1.Container" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="kfp.components.html#kfp.components.modelbase.ModelBase" title="kfp.components.modelbase.ModelBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">kfp.components.modelbase.ModelBase</span></code></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="kfp.components.structures.kubernetes.v1.PodArgoSubset">
+<em class="property">class </em><code class="descclassname">kfp.components.structures.kubernetes.v1.</code><code class="descname">PodArgoSubset</code><span class="sig-paren">(</span><em>metadata: Optional[kfp.components.structures.kubernetes.v1.ObjectMetaArgoSubset] = None</em>, <em>spec: Optional[kfp.components.structures.kubernetes.v1.PodSpecArgoSubset] = None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kfp/components/structures/kubernetes/v1.html#PodArgoSubset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#kfp.components.structures.kubernetes.v1.PodArgoSubset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="kfp.components.html#kfp.components.modelbase.ModelBase" title="kfp.components.modelbase.ModelBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">kfp.components.modelbase.ModelBase</span></code></a></p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-kfp.components.structures.kubernetes">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-kfp.components.structures.kubernetes" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">Kubeflow Pipelines</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Google.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/source/kfp.components.structures.kubernetes.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

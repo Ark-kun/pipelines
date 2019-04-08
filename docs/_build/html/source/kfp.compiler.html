@@ -1,0 +1,175 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>kfp.compiler package &#8212; Kubeflow Pipelines  documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="kfp-compiler-package">
+<h1>kfp.compiler package<a class="headerlink" href="#kfp-compiler-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-kfp.compiler.compiler">
+<span id="kfp-compiler-compiler-module"></span><h2>kfp.compiler.compiler module<a class="headerlink" href="#module-kfp.compiler.compiler" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="kfp.compiler.compiler.Compiler">
+<em class="property">class </em><code class="descclassname">kfp.compiler.compiler.</code><code class="descname">Compiler</code><a class="reference internal" href="../_modules/kfp/compiler/compiler.html#Compiler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#kfp.compiler.compiler.Compiler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>DSL Compiler.</p>
+<p>It compiles DSL pipeline functions into workflow yaml. Example usage:
+<a href="#id1"><span class="problematic" id="id2">``</span></a><a href="#id3"><span class="problematic" id="id4">`</span></a>python
+&#64;dsl.pipeline(</p>
+<blockquote>
+<div>name=’name’,
+description=’description’</div></blockquote>
+<p>)
+def my_pipeline(a: dsl.PipelineParam, b: dsl.PipelineParam):</p>
+<blockquote>
+<div>pass</div></blockquote>
+<p>Compiler().compile(my_pipeline, ‘path/to/workflow.yaml’)
+<a href="#id5"><span class="problematic" id="id6">``</span></a><a href="#id7"><span class="problematic" id="id8">`</span></a></p>
+<dl class="method">
+<dt id="kfp.compiler.compiler.Compiler.compile">
+<code class="descname">compile</code><span class="sig-paren">(</span><em>pipeline_func</em>, <em>package_path</em>, <em>type_check=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kfp/compiler/compiler.html#Compiler.compile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#kfp.compiler.compiler.Compiler.compile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compile the given pipeline function into workflow yaml.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>pipeline_func</strong> – pipeline functions with &#64;dsl.pipeline decorator.</li>
+<li><strong>package_path</strong> – the output workflow tar.gz file path. for example, “~/a.tar.gz”</li>
+<li><strong>type_check</strong> – whether to enable the type check or not, default: False.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-kfp.compiler.main">
+<span id="kfp-compiler-main-module"></span><h2>kfp.compiler.main module<a class="headerlink" href="#module-kfp.compiler.main" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="kfp.compiler.main.compile_package">
+<code class="descclassname">kfp.compiler.main.</code><code class="descname">compile_package</code><span class="sig-paren">(</span><em>package_path</em>, <em>namespace</em>, <em>function_name</em>, <em>output_path</em>, <em>type_check</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kfp/compiler/main.html#compile_package"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#kfp.compiler.main.compile_package" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="kfp.compiler.main.compile_pyfile">
+<code class="descclassname">kfp.compiler.main.</code><code class="descname">compile_pyfile</code><span class="sig-paren">(</span><em>pyfile</em>, <em>function_name</em>, <em>output_path</em>, <em>type_check</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kfp/compiler/main.html#compile_pyfile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#kfp.compiler.main.compile_pyfile" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="kfp.compiler.main.main">
+<code class="descclassname">kfp.compiler.main.</code><code class="descname">main</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kfp/compiler/main.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#kfp.compiler.main.main" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="kfp.compiler.main.parse_arguments">
+<code class="descclassname">kfp.compiler.main.</code><code class="descname">parse_arguments</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kfp/compiler/main.html#parse_arguments"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#kfp.compiler.main.parse_arguments" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse command line arguments.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-kfp.compiler">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-kfp.compiler" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">Kubeflow Pipelines</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Google.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/source/kfp.compiler.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

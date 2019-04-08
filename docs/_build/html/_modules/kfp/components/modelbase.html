@@ -1,0 +1,389 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>kfp.components.modelbase &#8212; Kubeflow Pipelines  documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for kfp.components.modelbase</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2018 Google LLC</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#      http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;ModelBase&#39;</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="kn">import</span> <span class="nn">inspect</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">abc</span><span class="p">,</span> <span class="n">OrderedDict</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">MutableMapping</span><span class="p">,</span> <span class="n">MutableSequence</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">cast</span><span class="p">,</span> <span class="n">get_type_hints</span>
+
+
+<span class="n">T</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;T&#39;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">verify_object_against_type</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">typ</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+    <span class="sd">&#39;&#39;&#39;Verifies that the object is compatible to the specified type (types from the typing package can be used).&#39;&#39;&#39;</span>
+    <span class="c1">#TODO: Merge with parse_object_from_struct_based_on_type which has almost the same code</span>
+    <span class="k">if</span> <span class="n">typ</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">x</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">x</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Error: Object &quot;</span><span class="si">{}</span><span class="s1">&quot; is not None.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">typ</span> <span class="ow">is</span> <span class="n">Any</span> <span class="ow">or</span> <span class="nb">type</span><span class="p">(</span><span class="n">typ</span><span class="p">)</span> <span class="ow">is</span> <span class="n">TypeVar</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">x</span>
+
+    <span class="k">try</span><span class="p">:</span> <span class="c1">#isinstance can fail for generics</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">typ</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">cast</span><span class="p">(</span><span class="n">typ</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">typ</span><span class="p">,</span> <span class="s1">&#39;__origin__&#39;</span><span class="p">):</span> <span class="c1">#Handling generic types</span>
+        <span class="k">if</span> <span class="n">typ</span><span class="o">.</span><span class="n">__origin__</span> <span class="ow">is</span> <span class="n">Union</span><span class="p">:</span> <span class="c1">#Optional == Union</span>
+            <span class="n">exception_map</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">possible_types</span> <span class="o">=</span> <span class="n">typ</span><span class="o">.</span><span class="n">__args__</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span> <span class="ow">in</span> <span class="n">possible_types</span> <span class="ow">and</span> <span class="n">x</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="c1">#Shortcut for Optional[] tests. Can be removed, but the exceptions will be more noisy.</span>
+                <span class="k">return</span> <span class="n">x</span>
+            <span class="k">for</span> <span class="n">possible_type</span> <span class="ow">in</span> <span class="n">possible_types</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">verify_object_against_type</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">possible_type</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="n">x</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+                    <span class="n">exception_map</span><span class="p">[</span><span class="n">possible_type</span><span class="p">]</span> <span class="o">=</span> <span class="n">ex</span>
+                    <span class="k">pass</span>
+            <span class="c1">#exception_lines = [&#39;Exception for type {}: {}.&#39;.format(t, e) for t, e in exception_map.items()]</span>
+            <span class="n">exception_lines</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">exception_map</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
+            <span class="n">exception_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;Error: Object &quot;</span><span class="si">{}</span><span class="s1">&quot; is incompatible with type &quot;</span><span class="si">{}</span><span class="s1">&quot;.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">typ</span><span class="p">))</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">exception_lines</span><span class="p">))</span>
+
+        <span class="c1">#not Union =&gt; not None</span>
+        <span class="k">if</span> <span class="n">x</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Error: None object is incompatible with type </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">typ</span><span class="p">))</span>
+
+        <span class="c1">#assert isinstance(x, typ.__origin__)</span>
+        <span class="n">generic_type</span> <span class="o">=</span> <span class="n">typ</span><span class="o">.</span><span class="n">__origin__</span> <span class="ow">or</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">typ</span><span class="p">,</span> <span class="s1">&#39;__extra__&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="c1">#In python &lt;3.7 typing.List.__origin__ == None; Python 3.7 has working __origin__, but no __extra__  TODO: Remove the __extra__ once we move to Python 3.7</span>
+        <span class="k">if</span> <span class="n">generic_type</span> <span class="ow">in</span> <span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">abc</span><span class="o">.</span><span class="n">Sequence</span><span class="p">,</span> <span class="n">abc</span><span class="o">.</span><span class="n">MutableSequence</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">MutableSequence</span><span class="p">]</span> <span class="ow">and</span> <span class="nb">type</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">str</span><span class="p">:</span> <span class="c1">#! str is also Sequence</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">generic_type</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Error: Object &quot;</span><span class="si">{}</span><span class="s1">&quot; is incompatible with type &quot;</span><span class="si">{}</span><span class="s1">&quot;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">typ</span><span class="p">))</span>
+            <span class="n">type_args</span> <span class="o">=</span> <span class="n">typ</span><span class="o">.</span><span class="n">__args__</span> <span class="k">if</span> <span class="n">typ</span><span class="o">.</span><span class="n">__args__</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">(</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">)</span> <span class="c1">#Workaround for Python &lt;3.7 (where Mapping.__args__ is None)</span>
+            <span class="n">inner_type</span> <span class="o">=</span> <span class="n">type_args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">x</span><span class="p">:</span>
+                <span class="n">verify_object_against_type</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">inner_type</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">x</span>
+
+        <span class="k">elif</span> <span class="n">generic_type</span> <span class="ow">in</span> <span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">abc</span><span class="o">.</span><span class="n">Mapping</span><span class="p">,</span> <span class="n">abc</span><span class="o">.</span><span class="n">MutableMapping</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">MutableMapping</span><span class="p">,</span> <span class="n">OrderedDict</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">generic_type</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Error: Object &quot;</span><span class="si">{}</span><span class="s1">&quot; is incompatible with type &quot;</span><span class="si">{}</span><span class="s1">&quot;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">typ</span><span class="p">))</span>
+            <span class="n">type_args</span> <span class="o">=</span> <span class="n">typ</span><span class="o">.</span><span class="n">__args__</span> <span class="k">if</span> <span class="n">typ</span><span class="o">.</span><span class="n">__args__</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">(</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">)</span> <span class="c1">#Workaround for Python &lt;3.7 (where Mapping.__args__ is None)</span>
+            <span class="n">inner_key_type</span> <span class="o">=</span> <span class="n">type_args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">inner_value_type</span> <span class="o">=</span> <span class="n">type_args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">x</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">verify_object_against_type</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">inner_key_type</span><span class="p">)</span>
+                <span class="n">verify_object_against_type</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">inner_value_type</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">x</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Error: Unsupported generic type &quot;</span><span class="si">{}</span><span class="s1">&quot;. type.__origin__ or type.__extra__ == &quot;</span><span class="si">{}</span><span class="s1">&quot;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">typ</span><span class="p">,</span> <span class="n">generic_type</span><span class="p">))</span>
+
+    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Error: Object &quot;</span><span class="si">{}</span><span class="s1">&quot; is incompatible with type &quot;</span><span class="si">{}</span><span class="s1">&quot;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">typ</span><span class="p">))</span>
+
+
+<span class="k">def</span> <span class="nf">parse_object_from_struct_based_on_type</span><span class="p">(</span><span class="n">struct</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">typ</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+    <span class="sd">&#39;&#39;&#39;Constructs an object from structure (usually dict) based on type. Supports list and dict types from the typing package plus Optional[] and Union[] types.</span>
+<span class="sd">    If some type is a class that has .from_struct class method, that method is used for object construction.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">if</span> <span class="n">typ</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">struct</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Error: Structure &quot;</span><span class="si">{}</span><span class="s1">&quot; is not None.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">struct</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">typ</span> <span class="ow">is</span> <span class="n">Any</span> <span class="ow">or</span> <span class="nb">type</span><span class="p">(</span><span class="n">typ</span><span class="p">)</span> <span class="ow">is</span> <span class="n">TypeVar</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">struct</span>
+
+    <span class="k">try</span><span class="p">:</span> <span class="c1">#isinstance can fail for generics</span>
+        <span class="c1">#if (isinstance(struct, typ)</span>
+        <span class="c1">#    and not (typ is Sequence and type(struct) is str) #! str is also Sequence</span>
+        <span class="c1">#    and not (typ is int and type(struct) is bool) #! bool is int</span>
+        <span class="c1">#):</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">struct</span><span class="p">)</span> <span class="ow">is</span> <span class="n">typ</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">struct</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">typ</span><span class="p">,</span> <span class="s1">&#39;from_struct&#39;</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span> <span class="c1">#More informative errors</span>
+            <span class="k">return</span> <span class="n">typ</span><span class="o">.</span><span class="n">from_struct</span><span class="p">(</span><span class="n">struct</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Error: </span><span class="si">{}</span><span class="s1">.from_struct(struct=</span><span class="si">{}</span><span class="s1">) failed with exception:</span><span class="se">\n</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">typ</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">struct</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">ex</span><span class="p">)))</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">typ</span><span class="p">,</span> <span class="s1">&#39;__origin__&#39;</span><span class="p">):</span> <span class="c1">#Handling generic types</span>
+        <span class="k">if</span> <span class="n">typ</span><span class="o">.</span><span class="n">__origin__</span> <span class="ow">is</span> <span class="n">Union</span><span class="p">:</span> <span class="c1">#Optional == Union</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">exception_map</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">possible_types</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">typ</span><span class="o">.</span><span class="n">__args__</span><span class="p">)</span>
+            <span class="c1">#if type(None) in possible_types and struct is None: #Shortcut for Optional[] tests. Can be removed, but the exceptions will be more noisy.</span>
+            <span class="c1">#    return None</span>
+            <span class="c1">#Hack for Python &lt;3.7 which for some reason &quot;simplifies&quot; Union[bool, int, ...] to just Union[int, ...]</span>
+            <span class="k">if</span> <span class="nb">int</span> <span class="ow">in</span> <span class="n">possible_types</span><span class="p">:</span>
+                <span class="n">possible_types</span> <span class="o">=</span> <span class="n">possible_types</span> <span class="o">+</span> <span class="p">[</span><span class="nb">bool</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">possible_type</span> <span class="ow">in</span> <span class="n">possible_types</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">obj</span> <span class="o">=</span> <span class="n">parse_object_from_struct_based_on_type</span><span class="p">(</span><span class="n">struct</span><span class="p">,</span> <span class="n">possible_type</span><span class="p">)</span>
+                    <span class="n">results</span><span class="p">[</span><span class="n">possible_type</span><span class="p">]</span> <span class="o">=</span> <span class="n">obj</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+                    <span class="n">exception_map</span><span class="p">[</span><span class="n">possible_type</span><span class="p">]</span> <span class="o">=</span> <span class="n">ex</span>
+                    <span class="k">pass</span>
+
+            <span class="c1">#Single successful parsing.</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">values</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Error: Structure &quot;</span><span class="si">{}</span><span class="s1">&quot; is ambiguous. It can be parsed to multiple types: </span><span class="si">{}</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">struct</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">keys</span><span class="p">())))</span>
+
+            <span class="n">exception_lines</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">exception_map</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
+            <span class="n">exception_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;Error: Structure &quot;</span><span class="si">{}</span><span class="s1">&quot; is incompatible with type &quot;</span><span class="si">{}</span><span class="s1">&quot; - none of the types in Union are compatible.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">struct</span><span class="p">,</span> <span class="n">typ</span><span class="p">))</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">exception_lines</span><span class="p">))</span>
+        <span class="c1">#not Union =&gt; not None</span>
+        <span class="k">if</span> <span class="n">struct</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Error: None structure is incompatible with type </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">typ</span><span class="p">))</span>
+
+        <span class="c1">#assert isinstance(x, typ.__origin__)</span>
+        <span class="n">generic_type</span> <span class="o">=</span> <span class="n">typ</span><span class="o">.</span><span class="n">__origin__</span> <span class="ow">or</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">typ</span><span class="p">,</span> <span class="s1">&#39;__extra__&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="c1">#In python &lt;3.7 typing.List.__origin__ == None; Python 3.7 has working __origin__, but no __extra__  TODO: Remove the __extra__ once we move to Python 3.7</span>
+        <span class="k">if</span> <span class="n">generic_type</span> <span class="ow">in</span> <span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">abc</span><span class="o">.</span><span class="n">Sequence</span><span class="p">,</span> <span class="n">abc</span><span class="o">.</span><span class="n">MutableSequence</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">MutableSequence</span><span class="p">]</span> <span class="ow">and</span> <span class="nb">type</span><span class="p">(</span><span class="n">struct</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">str</span><span class="p">:</span> <span class="c1">#! str is also Sequence</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">struct</span><span class="p">,</span> <span class="n">generic_type</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Error: Structure &quot;</span><span class="si">{}</span><span class="s1">&quot; is incompatible with type &quot;</span><span class="si">{}</span><span class="s1">&quot; - it does not have list type.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">struct</span><span class="p">,</span> <span class="n">typ</span><span class="p">))</span>
+            <span class="n">type_args</span> <span class="o">=</span> <span class="n">typ</span><span class="o">.</span><span class="n">__args__</span> <span class="k">if</span> <span class="n">typ</span><span class="o">.</span><span class="n">__args__</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">(</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">)</span> <span class="c1">#Workaround for Python &lt;3.7 (where Mapping.__args__ is None)</span>
+            <span class="n">inner_type</span> <span class="o">=</span> <span class="n">type_args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">parse_object_from_struct_based_on_type</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">inner_type</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">struct</span><span class="p">]</span>
+
+        <span class="k">elif</span> <span class="n">generic_type</span> <span class="ow">in</span> <span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">abc</span><span class="o">.</span><span class="n">Mapping</span><span class="p">,</span> <span class="n">abc</span><span class="o">.</span><span class="n">MutableMapping</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">MutableMapping</span><span class="p">,</span> <span class="n">OrderedDict</span><span class="p">]:</span> <span class="c1">#in Python &lt;3.7 there is a difference between abc.Mapping and typing.Mapping</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">struct</span><span class="p">,</span> <span class="n">generic_type</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Error: Structure &quot;</span><span class="si">{}</span><span class="s1">&quot; is incompatible with type &quot;</span><span class="si">{}</span><span class="s1">&quot; - it does not have dict type.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">struct</span><span class="p">,</span> <span class="n">typ</span><span class="p">))</span>
+            <span class="n">type_args</span> <span class="o">=</span> <span class="n">typ</span><span class="o">.</span><span class="n">__args__</span> <span class="k">if</span> <span class="n">typ</span><span class="o">.</span><span class="n">__args__</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">(</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">)</span> <span class="c1">#Workaround for Python &lt;3.7 (where Mapping.__args__ is None)</span>
+            <span class="n">inner_key_type</span> <span class="o">=</span> <span class="n">type_args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">inner_value_type</span> <span class="o">=</span> <span class="n">type_args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">return</span> <span class="p">{</span><span class="n">parse_object_from_struct_based_on_type</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">inner_key_type</span><span class="p">):</span> <span class="n">parse_object_from_struct_based_on_type</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">inner_value_type</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">struct</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Error: Unsupported generic type &quot;</span><span class="si">{}</span><span class="s1">&quot;. type.__origin__ or type.__extra__ == &quot;</span><span class="si">{}</span><span class="s1">&quot;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">typ</span><span class="p">,</span> <span class="n">generic_type</span><span class="p">))</span>
+
+    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Error: Structure &quot;</span><span class="si">{}</span><span class="s1">&quot; is incompatible with type &quot;</span><span class="si">{}</span><span class="s1">&quot;. Structure is not the instance of the type, the type does not have .from_struct method and is not generic.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">struct</span><span class="p">,</span> <span class="n">typ</span><span class="p">))</span>
+
+
+<span class="k">def</span> <span class="nf">convert_object_to_struct</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">serialized_names</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}):</span>
+    <span class="sd">&#39;&#39;&#39;Converts an object to structure (usually a dict).</span>
+<span class="sd">    Serializes all properties that do not start with underscores.</span>
+<span class="sd">    If the type of some property is a class that has .to_struct class method, that method is used for conversion.</span>
+<span class="sd">    Used by the ModelBase class.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">signature</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="fm">__init__</span><span class="p">)</span> <span class="c1">#Needed for default values</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">python_name</span> <span class="ow">in</span> <span class="n">signature</span><span class="o">.</span><span class="n">parameters</span><span class="p">:</span> <span class="c1">#TODO: Make it possible to specify the field ordering regardless of the presence of default values</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">python_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">python_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">):</span>
+            <span class="k">continue</span>
+        <span class="n">attr_name</span> <span class="o">=</span> <span class="n">serialized_names</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">python_name</span><span class="p">,</span> <span class="n">python_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s2">&quot;to_struct&quot;</span><span class="p">):</span>
+            <span class="n">result</span><span class="p">[</span><span class="n">attr_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">to_struct</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">result</span><span class="p">[</span><span class="n">attr_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">[(</span><span class="n">x</span><span class="o">.</span><span class="n">to_struct</span><span class="p">()</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="s1">&#39;to_struct&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">value</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">result</span><span class="p">[</span><span class="n">attr_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">to_struct</span><span class="p">()</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="s1">&#39;to_struct&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">value</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">param</span> <span class="o">=</span> <span class="n">signature</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">python_name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">param</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">param</span><span class="o">.</span><span class="n">default</span> <span class="o">==</span> <span class="n">inspect</span><span class="o">.</span><span class="n">Parameter</span><span class="o">.</span><span class="n">empty</span> <span class="ow">or</span> <span class="n">value</span> <span class="o">!=</span> <span class="n">param</span><span class="o">.</span><span class="n">default</span><span class="p">:</span>
+                <span class="n">result</span><span class="p">[</span><span class="n">attr_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="k">return</span> <span class="n">result</span>
+
+
+<span class="k">def</span> <span class="nf">parse_object_from_struct_based_on_class_init</span><span class="p">(</span><span class="bp">cls</span> <span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">struct</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">serialized_names</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{})</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+    <span class="sd">&#39;&#39;&#39;Constructs an object of specified class from structure (usually dict) using the class.__init__ method.</span>
+<span class="sd">    Converts all constructor arguments to appropriate types based on the __init__ type hints.</span>
+<span class="sd">    Used by the ModelBase class.</span>
+
+<span class="sd">    Arguments:</span>
+
+<span class="sd">    serialized_names: specifies the mapping between __init__ parameter names and the structure key names for cases where these names are different (due to language syntax clashes or style differences).</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">parameter_types</span> <span class="o">=</span> <span class="n">get_type_hints</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="fm">__init__</span><span class="p">)</span> <span class="c1">#Properlty resolves forward references</span>
+
+    <span class="n">serialized_names_to_pythonic</span> <span class="o">=</span> <span class="p">{</span><span class="n">v</span><span class="p">:</span> <span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">serialized_names</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+    <span class="c1">#If a pythonic name has a different original name, we forbid the pythonic name in the structure. Otherwise, this function would accept &quot;python-styled&quot; structures that should be invalid</span>
+    <span class="n">forbidden_struct_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">serialized_names_to_pythonic</span><span class="o">.</span><span class="n">values</span><span class="p">())</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">serialized_names_to_pythonic</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">original_name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">struct</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">original_name</span> <span class="ow">in</span> <span class="n">forbidden_struct_keys</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Use &quot;</span><span class="si">{}</span><span class="s1">&quot; key instead of pythonic key &quot;</span><span class="si">{}</span><span class="s1">&quot; in the structure: </span><span class="si">{}</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">serialized_names</span><span class="p">[</span><span class="n">original_name</span><span class="p">],</span> <span class="n">original_name</span><span class="p">,</span> <span class="n">struct</span><span class="p">))</span>
+        <span class="n">python_name</span> <span class="o">=</span> <span class="n">serialized_names_to_pythonic</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">original_name</span><span class="p">,</span> <span class="n">original_name</span><span class="p">)</span>
+        <span class="n">param_type</span> <span class="o">=</span> <span class="n">parameter_types</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">python_name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">param_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">args</span><span class="p">[</span><span class="n">python_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">parse_object_from_struct_based_on_type</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">param_type</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">args</span><span class="p">[</span><span class="n">python_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="n">args</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="ModelBase"><a class="viewcode-back" href="../../../source/kfp.components.html#kfp.components.modelbase.ModelBase">[docs]</a><span class="k">class</span> <span class="nc">ModelBase</span><span class="p">:</span>
+    <span class="sd">&#39;&#39;&#39;Base class for types that can be converted to JSON-like dict structures or constructed from such structures.</span>
+<span class="sd">    The object fields, their types and default values are taken from the __init__ method arguments.</span>
+<span class="sd">    Override the _serialized_names mapping to control the key names of the serialized structures.</span>
+
+<span class="sd">    The derived class objects will have the .from_struct and .to_struct methods for conversion to or from structure. The base class constructor accepts the arguments map, checks the argument types and sets the object field values.</span>
+
+<span class="sd">    Example derived class:</span>
+
+<span class="sd">    class TaskSpec(ModelBase):</span>
+<span class="sd">        _serialized_names = {</span>
+<span class="sd">            &#39;component_ref&#39;: &#39;componentRef&#39;,</span>
+<span class="sd">            &#39;is_enabled&#39;: &#39;isEnabled&#39;,</span>
+<span class="sd">        }</span>
+
+<span class="sd">        def __init__(self,</span>
+<span class="sd">            component_ref: ComponentReference,</span>
+<span class="sd">            arguments: Optional[Mapping[str, ArgumentType]] = None,</span>
+<span class="sd">            is_enabled: Optional[Union[ArgumentType, EqualsPredicate, NotEqualsPredicate]] = None, #Optional property with default value</span>
+<span class="sd">        ):</span>
+<span class="sd">            super().__init__(locals()) #Calling the ModelBase constructor to check the argument types and set the object field values. </span>
+<span class="sd">    </span>
+<span class="sd">    task_spec = TaskSpec.from_struct(&quot;{&#39;componentRef&#39;: {...}, &#39;isEnabled: {&#39;and&#39;: {...}}}&quot;) # = instance of TaskSpec</span>
+<span class="sd">    task_struct = task_spec.to_struct() #= &quot;{&#39;componentRef&#39;: {...}, &#39;isEnabled: {&#39;and&#39;: {...}}}&quot;</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">_serialized_names</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
+        <span class="n">parameter_types</span> <span class="o">=</span> <span class="n">get_type_hints</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="fm">__init__</span><span class="p">)</span>
+        <span class="n">field_values</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">args</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="o">!=</span> <span class="s1">&#39;self&#39;</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)}</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">field_values</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">parameter_type</span> <span class="o">=</span> <span class="n">parameter_types</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">parameter_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">verify_object_against_type</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">parameter_type</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Argument for </span><span class="si">{}</span><span class="s1"> is not compatible with type &quot;</span><span class="si">{}</span><span class="s1">&quot;. Exception: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">parameter_type</span><span class="p">,</span> <span class="n">e</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">field_values</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ModelBase.from_struct"><a class="viewcode-back" href="../../../source/kfp.components.html#kfp.components.modelbase.ModelBase.from_struct">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_struct</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">struct</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">parse_object_from_struct_based_on_class_init</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">struct</span><span class="p">,</span> <span class="n">serialized_names</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">_serialized_names</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ModelBase.to_struct"><a class="viewcode-back" href="../../../source/kfp.components.html#kfp.components.modelbase.ModelBase.to_struct">[docs]</a>    <span class="k">def</span> <span class="nf">to_struct</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mapping</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">convert_object_to_struct</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">serialized_names</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_serialized_names</span><span class="p">)</span></div>
+    
+    <span class="k">def</span> <span class="nf">_get_field_names</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="fm">__init__</span><span class="p">)</span><span class="o">.</span><span class="n">parameters</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">+</span> <span class="s1">&#39;(&#39;</span> <span class="o">+</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">param</span> <span class="o">+</span> <span class="s1">&#39;=&#39;</span> <span class="o">+</span> <span class="nb">repr</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param</span><span class="p">))</span> <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_field_names</span><span class="p">())</span> <span class="o">+</span> <span class="s1">&#39;)&#39;</span>
+
+    <span class="k">def</span> <span class="nf">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="vm">__class__</span> <span class="ow">and</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_field_names</span><span class="p">()}</span> <span class="o">==</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">other</span><span class="o">.</span><span class="n">_get_field_names</span><span class="p">()}</span>
+
+    <span class="k">def</span> <span class="nf">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span> <span class="o">==</span> <span class="n">other</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">Kubeflow Pipelines</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Google.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
