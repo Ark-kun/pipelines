@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
 import re
 from typing import Union, List, Any, Callable, TypeVar, Dict
 
@@ -207,6 +208,15 @@ def _op_to_template(op: dsl.ContainerOp):
             template['metadata']['annotations'] = processed_op.pod_annotations
         if processed_op.pod_labels:
             template['metadata']['labels'] = processed_op.pod_labels
+
+    # Adding original component and task specs as annotations. This information can be useful for debugging or for downstream services (e.g. it can be surfaced in UX)
+    component_spec = getattr(processed_op, '_component_spec', None)
+    if component_spec:
+        template.setdefault('metadata', {}).setdefault('annotations', {})['kubeflow.org/pipelines/component_spec'] = json.dumps(component_spec.to_struct())
+    task_spec = getattr(processed_op, '_task_spec', None)
+    if task_spec:
+        template.setdefault('metadata', {}).setdefault('annotations', {})['kubeflow.org/pipelines/task_spec'] = json.dumps(task_spec.to_struct())
+
     # retries
     if processed_op.num_retries:
         template['retryStrategy'] = {'limit': processed_op.num_retries}

@@ -15,6 +15,7 @@
 
 from collections import defaultdict
 import inspect
+import json
 import re
 import tarfile
 import zipfile
@@ -627,6 +628,11 @@ class Compiler(object):
       sanitized_ops[sanitized_name] = op
     p.ops = sanitized_ops
     workflow = self._create_pipeline_workflow(args_list_with_defaults, p)
+
+    # Adding the pipeline metadata annotation
+    entrypoint_template_name = workflow['spec']['entrypoint']
+    entrypoint_template = [template for template in workflow['spec']['templates'] if template['name'] == entrypoint_template_name][0]
+    entrypoint_template.setdefault('metadata', {}).setdefault('annotations', {})['kubeflow.org/pipelines/pipeline_meta'] = json.dumps(pipeline_meta.to_dict())
     return workflow
 
   def compile(self, pipeline_func, package_path, type_check=True):
