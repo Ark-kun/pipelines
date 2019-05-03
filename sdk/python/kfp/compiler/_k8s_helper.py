@@ -70,7 +70,7 @@ def convert_k8s_obj_to_json(k8s_obj):
     elif isinstance(k8s_obj, dsl.PipelineParam): 
       if isinstance(k8s_obj.value, str):
         return k8s_obj.value
-      return '{{inputs.parameters.%s}}' % k8s_obj.full_name
+      return '{{inputs.parameters.%s}}' % k8s_obj.name
     
     if isinstance(k8s_obj, dict):
       obj_dict = k8s_obj

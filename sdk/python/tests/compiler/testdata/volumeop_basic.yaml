@@ -24,25 +24,25 @@ spec:
         name: create-pvc
     inputs:
       parameters:
-      - name: create-pvc-name
+      - name: name
     name: cop
     volumes:
     - name: create-pvc
       persistentVolumeClaim:
-        claimName: '{{inputs.parameters.create-pvc-name}}'
+        claimName: '{{inputs.parameters.name}}'
   - inputs:
       parameters:
       - name: size
     name: create-pvc
     outputs:
       parameters:
-      - name: create-pvc-manifest
+      - name: manifest
         valueFrom:
           jsonPath: '{}'
-      - name: create-pvc-name
+      - name: name
         valueFrom:
           jsonPath: '{.metadata.name}'
-      - name: create-pvc-size
+      - name: size
         valueFrom:
           jsonPath: '{.status.capacity.storage}'
     resource:
@@ -54,8 +54,8 @@ spec:
       tasks:
       - arguments:
           parameters:
-          - name: create-pvc-name
-            value: '{{tasks.create-pvc.outputs.parameters.create-pvc-name}}'
+          - name: name
+            value: '{{tasks.create-pvc.outputs.parameters.name}}'
         dependencies:
         - create-pvc
         name: cop

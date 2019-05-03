@@ -42,10 +42,10 @@ spec:
     name: download
     outputs:
       artifacts:
-      - name: download-downloaded
+      - name: downloaded
         path: /tmp/results.txt
       parameters:
-      - name: download-downloaded
+      - name: downloaded
         valueFrom:
           path: /tmp/results.txt
     volumes:
@@ -54,14 +54,14 @@ spec:
         secretName: user-gcp-sa
   - container:
       args:
-      - echo {{inputs.parameters.download-downloaded}}
+      - echo {{inputs.parameters.downloaded}}
       command:
       - sh
       - -c
       image: library/bash
     inputs:
       parameters:
-      - name: download-downloaded
+      - name: downloaded
     name: echo
   - dag:
       tasks:
@@ -69,8 +69,8 @@ spec:
         template: download
       - arguments:
           parameters:
-          - name: download-downloaded
-            value: '{{tasks.download.outputs.parameters.download-downloaded}}'
+          - name: downloaded
+            value: '{{tasks.download.outputs.parameters.downloaded}}'
         dependencies:
         - download
         name: echo

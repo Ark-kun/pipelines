@@ -27,44 +27,44 @@ spec:
       tasks:
       - arguments:
           parameters:
-          - name: flip-again-output
-            value: '{{tasks.flip-again.outputs.parameters.flip-again-output}}'
+          - name: output
+            value: '{{tasks.flip-again.outputs.parameters.output}}'
         dependencies:
         - flip-again
         name: condition-2
         template: condition-2
-        when: '"{{tasks.flip-again.outputs.parameters.flip-again-output}}" == "tails"'
+        when: '"{{tasks.flip-again.outputs.parameters.output}}" == "tails"'
       - name: flip-again
         template: flip-again
     name: condition-1
     outputs:
       parameters:
-      - name: flip-again-output
+      - name: output
         valueFrom:
-          parameter: '{{tasks.flip-again.outputs.parameters.flip-again-output}}'
+          parameter: '{{tasks.flip-again.outputs.parameters.output}}'
   - dag:
       tasks:
       - arguments:
           parameters:
-          - name: flip-again-output
-            value: '{{inputs.parameters.flip-again-output}}'
+          - name: output
+            value: '{{inputs.parameters.output}}'
         name: print1
         template: print1
     inputs:
       parameters:
-      - name: flip-again-output
+      - name: output
     name: condition-2
   - dag:
       tasks:
       - arguments:
           parameters:
-          - name: flip-again-output
-            value: '{{inputs.parameters.flip-again-output}}'
+          - name: output
+            value: '{{inputs.parameters.output}}'
         name: print2
         template: print2
     inputs:
       parameters:
-      - name: flip-again-output
+      - name: output
     name: condition-3
   - container:
       args:
@@ -77,10 +77,10 @@ spec:
     name: flip
     outputs:
       artifacts:
-      - name: flip-output
+      - name: output
         path: /tmp/output
       parameters:
-      - name: flip-output
+      - name: output
         valueFrom:
           path: /tmp/output
   - container:
@@ -94,10 +94,10 @@ spec:
     name: flip-again
     outputs:
       artifacts:
-      - name: flip-again-output
+      - name: output
         path: /tmp/output
       parameters:
-      - name: flip-again-output
+      - name: output
         valueFrom:
           path: /tmp/output
   - dag:
@@ -106,35 +106,35 @@ spec:
         - flip
         name: condition-1
         template: condition-1
-        when: '"{{tasks.flip.outputs.parameters.flip-output}}" == "heads"'
+        when: '"{{tasks.flip.outputs.parameters.output}}" == "heads"'
       - arguments:
           parameters:
-          - name: flip-again-output
-            value: '{{tasks.condition-1.outputs.parameters.flip-again-output}}'
+          - name: output
+            value: '{{tasks.condition-1.outputs.parameters.output}}'
         dependencies:
         - condition-1
         - flip
         name: condition-3
         template: condition-3
-        when: '"{{tasks.flip.outputs.parameters.flip-output}}" == "tails"'
+        when: '"{{tasks.flip.outputs.parameters.output}}" == "tails"'
       - name: flip
         template: flip
     name: pipeline-flip-coin
   - container:
       command:
       - echo
-      - '{{inputs.parameters.flip-again-output}}'
+      - '{{inputs.parameters.output}}'
       image: alpine:3.6
     inputs:
       parameters:
-      - name: flip-again-output
+      - name: output
     name: print1
   - container:
       command:
       - echo
-      - '{{inputs.parameters.flip-again-output}}'
+      - '{{inputs.parameters.output}}'
       image: alpine:3.6
     inputs:
       parameters:
-      - name: flip-again-output
+      - name: output
     name: print2

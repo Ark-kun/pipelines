@@ -14,29 +14,29 @@ spec:
   - container:
       args:
       - --param
-      - '{{inputs.parameters.create-volume-name}}'
+      - '{{inputs.parameters.name}}'
       image: image
       volumeMounts:
       - mountPath: /mnt
         name: create-volume
     inputs:
       parameters:
-      - name: create-volume-name
+      - name: name
     name: cop
     volumes:
     - name: create-volume
       persistentVolumeClaim:
-        claimName: '{{inputs.parameters.create-volume-name}}'
+        claimName: '{{inputs.parameters.name}}'
   - name: create-volume
     outputs:
       parameters:
-      - name: create-volume-manifest
+      - name: manifest
         valueFrom:
           jsonPath: '{}'
-      - name: create-volume-name
+      - name: name
         valueFrom:
           jsonPath: '{.metadata.name}'
-      - name: create-volume-size
+      - name: size
         valueFrom:
           jsonPath: '{.status.capacity.storage}'
     resource:
@@ -48,8 +48,8 @@ spec:
       tasks:
       - arguments:
           parameters:
-          - name: create-volume-name
-            value: '{{tasks.create-volume.outputs.parameters.create-volume-name}}'
+          - name: name
+            value: '{{tasks.create-volume.outputs.parameters.name}}'
         dependencies:
         - create-volume
         name: cop

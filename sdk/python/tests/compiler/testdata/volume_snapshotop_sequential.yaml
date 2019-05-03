@@ -15,13 +15,13 @@ spec:
   - name: create-volume
     outputs:
       parameters:
-      - name: create-volume-manifest
+      - name: manifest
         valueFrom:
           jsonPath: '{}'
-      - name: create-volume-name
+      - name: name
         valueFrom:
           jsonPath: '{.metadata.name}'
-      - name: create-volume-size
+      - name: size
         valueFrom:
           jsonPath: '{.status.capacity.storage}'
     resource:
@@ -41,33 +41,33 @@ spec:
         name: create-volume
     inputs:
       parameters:
-      - name: create-volume-name
+      - name: name
       - name: url
     name: step1-ingest
     volumes:
     - name: create-volume
       persistentVolumeClaim:
-        claimName: '{{inputs.parameters.create-volume-name}}'
+        claimName: '{{inputs.parameters.name}}'
   - inputs:
       parameters:
-      - name: create-volume-name
+      - name: name
     name: step1-snap
     outputs:
       parameters:
-      - name: step1-snap-manifest
+      - name: manifest
         valueFrom:
           jsonPath: '{}'
-      - name: step1-snap-name
+      - name: name
         valueFrom:
           jsonPath: '{.metadata.name}'
-      - name: step1-snap-size
+      - name: size
         valueFrom:
           jsonPath: '{.status.restoreSize}'
     resource:
       action: create
       manifest: "apiVersion: snapshot.storage.k8s.io/v1alpha1\nkind: VolumeSnapshot\n\
         metadata:\n  name: '{{workflow.name}}-step1-snap'\nspec:\n  source:\n    kind:\
-        \ PersistentVolumeClaim\n    name: '{{inputs.parameters.create-volume-name}}'\n"
+        \ PersistentVolumeClaim\n    name: '{{inputs.parameters.name}}'\n"
       successCondition: status.readyToUse == true
   - container:
       args:
@@ -81,32 +81,32 @@ spec:
         name: create-volume
     inputs:
       parameters:
-      - name: create-volume-name
+      - name: name
     name: step2-gunzip
     volumes:
     - name: create-volume
       persistentVolumeClaim:
-        claimName: '{{inputs.parameters.create-volume-name}}'
+        claimName: '{{inputs.parameters.name}}'
   - inputs:
       parameters:
-      - name: create-volume-name
+      - name: name
     name: step2-snap
     outputs:
       parameters:
-      - name: step2-snap-manifest
+      - name: manifest
         valueFrom:
           jsonPath: '{}'
-      - name: step2-snap-name
+      - name: name
         valueFrom:
           jsonPath: '{.metadata.name}'
-      - name: step2-snap-size
+      - name: size
         valueFrom:
           jsonPath: '{.status.restoreSize}'
     resource:
       action: create
       manifest: "apiVersion: snapshot.storage.k8s.io/v1alpha1\nkind: VolumeSnapshot\n\
         metadata:\n  name: '{{workflow.name}}-step2-snap'\nspec:\n  source:\n    kind:\
-        \ PersistentVolumeClaim\n    name: '{{inputs.parameters.create-volume-name}}'\n"
+        \ PersistentVolumeClaim\n    name: '{{inputs.parameters.name}}'\n"
       successCondition: status.readyToUse == true
   - container:
       args:
@@ -120,32 +120,32 @@ spec:
         name: create-volume
     inputs:
       parameters:
-      - name: create-volume-name
+      - name: name
     name: step3-copy
     volumes:
     - name: create-volume
       persistentVolumeClaim:
-        claimName: '{{inputs.parameters.create-volume-name}}'
+        claimName: '{{inputs.parameters.name}}'
   - inputs:
       parameters:
-      - name: create-volume-name
+      - name: name
     name: step3-snap
     outputs:
       parameters:
-      - name: step3-snap-manifest
+      - name: manifest
         valueFrom:
           jsonPath: '{}'
-      - name: step3-snap-name
+      - name: name
         valueFrom:
           jsonPath: '{.metadata.name}'
-      - name: step3-snap-size
+      - name: size
         valueFrom:
           jsonPath: '{.status.restoreSize}'
     resource:
       action: create
       manifest: "apiVersion: snapshot.storage.k8s.io/v1alpha1\nkind: VolumeSnapshot\n\
         metadata:\n  name: '{{workflow.name}}-step3-snap'\nspec:\n  source:\n    kind:\
-        \ PersistentVolumeClaim\n    name: '{{inputs.parameters.create-volume-name}}'\n"
+        \ PersistentVolumeClaim\n    name: '{{inputs.parameters.name}}'\n"
       successCondition: status.readyToUse == true
   - container:
       command:
@@ -158,20 +158,20 @@ spec:
         name: create-volume
     inputs:
       parameters:
-      - name: create-volume-name
+      - name: name
     name: step4-output
     volumes:
     - name: create-volume
       persistentVolumeClaim:
-        claimName: '{{inputs.parameters.create-volume-name}}'
+        claimName: '{{inputs.parameters.name}}'
   - dag:
       tasks:
       - name: create-volume
         template: create-volume
       - arguments:
           parameters:
-          - name: create-volume-name
-            value: '{{tasks.create-volume.outputs.parameters.create-volume-name}}'
+          - name: name
+            value: '{{tasks.create-volume.outputs.parameters.name}}'
           - name: url
             value: '{{inputs.parameters.url}}'
         dependencies:
@@ -180,8 +180,8 @@ spec:
         template: step1-ingest
       - arguments:
           parameters:
-          - name: create-volume-name
-            value: '{{tasks.create-volume.outputs.parameters.create-volume-name}}'
+          - name: name
+            value: '{{tasks.create-volume.outputs.parameters.name}}'
         dependencies:
         - create-volume
         - step1-ingest
@@ -189,8 +189,8 @@ spec:
         template: step1-snap
       - arguments:
           parameters:
-          - name: create-volume-name
-            value: '{{tasks.create-volume.outputs.parameters.create-volume-name}}'
+          - name: name
+            value: '{{tasks.create-volume.outputs.parameters.name}}'
         dependencies:
         - create-volume
         - step1-ingest
@@ -198,8 +198,8 @@ spec:
         template: step2-gunzip
       - arguments:
           parameters:
-          - name: create-volume-name
-            value: '{{tasks.create-volume.outputs.parameters.create-volume-name}}'
+          - name: name
+            value: '{{tasks.create-volume.outputs.parameters.name}}'
         dependencies:
         - create-volume
         - step2-gunzip
@@ -207,8 +207,8 @@ spec:
         template: step2-snap
       - arguments:
           parameters:
-          - name: create-volume-name
-            value: '{{tasks.create-volume.outputs.parameters.create-volume-name}}'
+          - name: name
+            value: '{{tasks.create-volume.outputs.parameters.name}}'
         dependencies:
         - create-volume
         - step2-gunzip
@@ -216,8 +216,8 @@ spec:
         template: step3-copy
       - arguments:
           parameters:
-          - name: create-volume-name
-            value: '{{tasks.create-volume.outputs.parameters.create-volume-name}}'
+          - name: name
+            value: '{{tasks.create-volume.outputs.parameters.name}}'
         dependencies:
         - create-volume
         - step3-copy
@@ -225,8 +225,8 @@ spec:
         template: step3-snap
       - arguments:
           parameters:
-          - name: create-volume-name
-            value: '{{tasks.create-volume.outputs.parameters.create-volume-name}}'
+          - name: name
+            value: '{{tasks.create-volume.outputs.parameters.name}}'
         dependencies:
         - create-volume
         - step3-copy

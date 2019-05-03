@@ -31,7 +31,7 @@ T = TypeVar('T')
 def _process_obj(obj: Any, map_to_tmpl_var: dict):
     """Recursively sanitize and replace any PipelineParam (instances and serialized strings)
     in the object with the corresponding template variables
-    (i.e. '{{inputs.parameters.<PipelineParam.full_name>}}').
+    (i.e. '{{inputs.parameters.<PipelineParam.name>}}').
     
     Args:
       obj: any obj that may have PipelineParam
@@ -66,7 +66,7 @@ def _process_obj(obj: Any, map_to_tmpl_var: dict):
     # pipelineparam
     if isinstance(obj, dsl.PipelineParam):
         # if not found in unsanitized map, then likely to be sanitized
-        return map_to_tmpl_var.get(str(obj), '{{inputs.parameters.%s}}' % obj.full_name)
+        return map_to_tmpl_var.get(str(obj), '{{inputs.parameters.%s}}' % obj.name)
 
     # k8s objects (generated from swaggercodegen)
     if hasattr(obj, 'attribute_map') and isinstance(obj.attribute_map, dict):
@@ -99,7 +99,7 @@ def _process_base_ops(op: BaseOp):
 
     # map param's (unsanitized pattern or serialized str pattern) -> input param var str
     map_to_tmpl_var = {
-        (param.pattern or str(param)): '{{inputs.parameters.%s}}' % param.full_name
+        (param.pattern or str(param)): '{{inputs.parameters.%s}}' % param.name
         for param in op.inputs
     }
 
@@ -112,8 +112,8 @@ def _process_base_ops(op: BaseOp):
 
 def _parameters_to_json(params: List[dsl.PipelineParam]):
     """Converts a list of PipelineParam into an argo `parameter` JSON obj."""
-    _to_json = (lambda param: dict(name=param.full_name, value=param.value)
-                if param.value else dict(name=param.full_name))
+    _to_json = (lambda param: dict(name=param.name, value=param.value)
+                if param.value else dict(name=param.name))
     params = [_to_json(param) for param in params]
     # Sort to make the results deterministic.
     params.sort(key=lambda x: x['name'])
@@ -157,7 +157,7 @@ def _outputs_to_json(op: BaseOp,
     output_parameters = []
     for param in set(outputs.values()):  # set() dedupes output references
         output_parameters.append({
-            'name': param.full_name,
+            'name': param.name,
             'valueFrom': {
                 value_from_key: param_outputs[param.name]
             }
@@ -187,7 +187,7 @@ def _op_to_template(op: BaseOp):
     if isinstance(op, dsl.ContainerOp):
         output_artifact_paths = OrderedDict()
         # This should have been as easy as output_artifact_paths.update(op.file_outputs), but the _outputs_to_json function changes the output names and we must do the same here, so that the names are the same
-        output_artifact_paths.update(sorted(((param.full_name, processed_op.file_outputs[param.name]) for param in processed_op.outputs.values()), key=lambda x: x[0]))
+        output_artifact_paths.update(sorted(((param.name, processed_op.file_outputs[param.name]) for param in processed_op.outputs.values()), key=lambda x: x[0]))
 
         output_artifacts = [
             {'name': name, 'path': path}

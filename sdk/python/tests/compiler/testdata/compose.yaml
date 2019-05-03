@@ -38,10 +38,10 @@ spec:
     name: download
     outputs:
       artifacts:
-      - name: download-downloaded
+      - name: downloaded
         path: /tmp/results.txt
       parameters:
-      - name: download-downloaded
+      - name: downloaded
         valueFrom:
           path: /tmp/results.txt
   - dag:
@@ -54,18 +54,18 @@ spec:
         template: download
       - arguments:
           parameters:
-          - name: download-downloaded
-            value: '{{tasks.download.outputs.parameters.download-downloaded}}'
+          - name: downloaded
+            value: '{{tasks.download.outputs.parameters.downloaded}}'
         dependencies:
         - download
         name: get-frequent
         template: get-frequent
       - arguments:
           parameters:
-          - name: get-frequent-word
-            value: '{{tasks.get-frequent.outputs.parameters.get-frequent-word}}'
           - name: outputpath
             value: '{{inputs.parameters.outputpath}}'
+          - name: word
+            value: '{{tasks.get-frequent.outputs.parameters.word}}'
         dependencies:
         - get-frequent
         name: save
@@ -77,7 +77,7 @@ spec:
     name: download-and-save-most-frequent
   - container:
       args:
-      - python -c "from collections import Counter; words = Counter('{{inputs.parameters.download-downloaded}}'.split());
+      - python -c "from collections import Counter; words = Counter('{{inputs.parameters.downloaded}}'.split());
         print(max(words, key=words.get))" | tee /tmp/message.txt
       command:
       - sh
@@ -85,19 +85,19 @@ spec:
       image: python:3.5-jessie
     inputs:
       parameters:
-      - name: download-downloaded
+      - name: downloaded
     name: get-frequent
     outputs:
       artifacts:
-      - name: get-frequent-word
+      - name: word
         path: /tmp/message.txt
       parameters:
-      - name: get-frequent-word
+      - name: word
         valueFrom:
           path: /tmp/message.txt
   - container:
       args:
-      - echo {{inputs.parameters.get-frequent-word}} | tee /tmp/results.txt | gsutil
+      - echo {{inputs.parameters.word}} | tee /tmp/results.txt | gsutil
         cp /tmp/results.txt {{inputs.parameters.outputpath}}
       command:
       - sh
@@ -105,6 +105,6 @@ spec:
       image: google/cloud-sdk
     inputs:
       parameters:
-      - name: get-frequent-word
       - name: outputpath
+      - name: word
     name: save

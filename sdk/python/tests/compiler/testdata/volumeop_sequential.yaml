@@ -14,13 +14,13 @@ spec:
   - name: mypvc
     outputs:
       parameters:
-      - name: mypvc-manifest
+      - name: manifest
         valueFrom:
           jsonPath: '{}'
-      - name: mypvc-name
+      - name: name
         valueFrom:
           jsonPath: '{.metadata.name}'
-      - name: mypvc-size
+      - name: size
         valueFrom:
           jsonPath: '{.status.capacity.storage}'
     resource:
@@ -40,12 +40,12 @@ spec:
         name: mypvc
     inputs:
       parameters:
-      - name: mypvc-name
+      - name: name
     name: step1
     volumes:
     - name: mypvc
       persistentVolumeClaim:
-        claimName: '{{inputs.parameters.mypvc-name}}'
+        claimName: '{{inputs.parameters.name}}'
   - container:
       args:
       - cp /data/file1 /data/file2
@@ -58,12 +58,12 @@ spec:
         name: mypvc
     inputs:
       parameters:
-      - name: mypvc-name
+      - name: name
     name: step2
     volumes:
     - name: mypvc
       persistentVolumeClaim:
-        claimName: '{{inputs.parameters.mypvc-name}}'
+        claimName: '{{inputs.parameters.name}}'
   - container:
       command:
       - cat
@@ -75,28 +75,28 @@ spec:
         name: mypvc
     inputs:
       parameters:
-      - name: mypvc-name
+      - name: name
     name: step3
     volumes:
     - name: mypvc
       persistentVolumeClaim:
-        claimName: '{{inputs.parameters.mypvc-name}}'
+        claimName: '{{inputs.parameters.name}}'
   - dag:
       tasks:
       - name: mypvc
         template: mypvc
       - arguments:
           parameters:
-          - name: mypvc-name
-            value: '{{tasks.mypvc.outputs.parameters.mypvc-name}}'
+          - name: name
+            value: '{{tasks.mypvc.outputs.parameters.name}}'
         dependencies:
         - mypvc
         name: step1
         template: step1
       - arguments:
           parameters:
-          - name: mypvc-name
-            value: '{{tasks.mypvc.outputs.parameters.mypvc-name}}'
+          - name: name
+            value: '{{tasks.mypvc.outputs.parameters.name}}'
         dependencies:
         - mypvc
         - step1
@@ -104,8 +104,8 @@ spec:
         template: step2
       - arguments:
           parameters:
-          - name: mypvc-name
-            value: '{{tasks.mypvc.outputs.parameters.mypvc-name}}'
+          - name: name
+            value: '{{tasks.mypvc.outputs.parameters.name}}'
         dependencies:
         - mypvc
         - step2

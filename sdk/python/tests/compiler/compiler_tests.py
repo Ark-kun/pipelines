@@ -101,12 +101,12 @@ class TestCompiler(unittest.TestCase):
         'outputs': {
           'artifacts': [
             {
-              'name': 'echo-merged',
+              'name': 'merged',
               'path': '/tmp/message.txt',
             },
           ],
           'parameters': [
-            {'name': 'echo-merged',
+            {'name': 'merged',
             'valueFrom': {'path': '/tmp/message.txt'}
             }],
         }
@@ -122,17 +122,17 @@ class TestCompiler(unittest.TestCase):
         'name': 'test-resource',
         'outputs': {
           'parameters': [{
-            'name': 'test-resource-manifest',
+            'name': 'manifest',
             'valueFrom': {
               'jsonPath': '{}'
             }
           }, {
-            'name': 'test-resource-name',
+            'name': 'name',
             'valueFrom': {
               'jsonPath': '{.metadata.name}'
             }
           }, {
-            'name': 'test-resource-out',
+            'name': 'out',
             'valueFrom': {
               'jsonPath': '{{inputs.parameters.json}}'
             }

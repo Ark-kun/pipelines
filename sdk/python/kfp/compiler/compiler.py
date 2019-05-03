@@ -258,25 +258,25 @@ class Compiler(object):
             if i == 0:
               # If it is the first uncommon downstream group, then the input comes from
               # the first uncommon upstream group.
-              inputs[group_name].add((param.full_name, upstream_groups[0]))
+              inputs[group_name].add((param.name, upstream_groups[0]))
             else:
               # If not the first downstream group, then the input is passed down from
               # its ancestor groups so the upstream group is None.
-              inputs[group_name].add((param.full_name, None))
+              inputs[group_name].add((param.name, None))
           for i, group_name in enumerate(upstream_groups):
             if i == len(upstream_groups) - 1:
               # If last upstream group, it is an operator and output comes from container.
-              outputs[group_name].add((param.full_name, None))
+              outputs[group_name].add((param.name, None))
             else:
               # If not last upstream group, output value comes from one of its child.
-              outputs[group_name].add((param.full_name, upstream_groups[i+1]))
+              outputs[group_name].add((param.name, upstream_groups[i+1]))
         else:
           if not op.is_exit_handler:
             for group_name in op_groups[op.name][::-1]:
               # if group is for loop group and param is that loop's param, then the param
               # is created by that for loop ops_group and it shouldn't be an input to
               # any of its parent groups.
-              inputs[group_name].add((param.full_name, None))
+              inputs[group_name].add((param.name, None))
               if group_name in op_name_to_for_loop_op:
                 # for example:
                 #   loop_group.loop_args.name = 'loop-item-param-99ca152e'
@@ -296,28 +296,27 @@ class Compiler(object):
         for param, is_condition_param in params:
           if param.value:
             continue
-          full_name = self._pipelineparam_full_name(param)
           if param.op_name:
             upstream_op = pipeline.ops[param.op_name]
             upstream_groups, downstream_groups = \
               self._get_uncommon_ancestors(op_groups, opsgroup_groups, upstream_op, group)
             for i, g in enumerate(downstream_groups):
               if i == 0:
-                inputs[g].add((full_name, upstream_groups[0]))
+                inputs[g].add((param.name, upstream_groups[0]))
               # There is no need to pass the condition param as argument to the downstream ops.
               #TODO: this might also apply to ops. add a TODO here and think about it.
               elif i == len(downstream_groups) - 1 and is_condition_param:
                 continue
               else:
-                inputs[g].add((full_name, None))
+                inputs[g].add((param.name, None))
             for i, g in enumerate(upstream_groups):
               if i == len(upstream_groups) - 1:
-                outputs[g].add((full_name, None))
+                outputs[g].add((param.name, None))
               else:
-                outputs[g].add((full_name, upstream_groups[i+1]))
+                outputs[g].add((param.name, upstream_groups[i+1]))
           elif not is_condition_param:
             for g in op_groups[group.name]:
-              inputs[g].add((full_name, None))
+              inputs[g].add((param.name, None))
       for subgroup in group.groups:
         _get_inputs_outputs_recursive_opsgroup(subgroup)
 
@@ -390,9 +389,10 @@ class Compiler(object):
       potential_references(dict{str->str}): a dictionary of parameter names to task names
       """
     if isinstance(value_or_reference, dsl.PipelineParam):
-      parameter_name = self._pipelineparam_full_name(value_or_reference)
+      parameter_name = value_or_reference.name
       task_names = [task_name for param_name, task_name in potential_references if param_name == parameter_name]
       if task_names:
+        assert len(task_names) == 1
         task_name = task_names[0]
         # When the task_name is None, the parameter comes directly from ancient ancesters
         # instead of parents. Thus, it is resolved as the input parameter in the current group.
@@ -481,8 +481,7 @@ class Compiler(object):
           if pipeline_param.op_name is None:
             withparam_value = '{{workflow.parameters.%s}}' % pipeline_param.name
           else:
-            param_name = '%s-%s' % (
-              sanitize_k8s_name(pipeline_param.op_name), pipeline_param.name)
+            param_name = pipeline_param.name
             withparam_value = '{{tasks.%s.outputs.parameters.%s}}' % (
                 sanitize_k8s_name(pipeline_param.op_name),
                 param_name)
@@ -525,20 +524,22 @@ class Compiler(object):
     for param_name, dependent_name in inputs[sub_group.name]:
       if is_recursive_subgroup:
         for input_name, input in sub_group.arguments.items():
-          if param_name == self._pipelineparam_full_name(input):
+          if param_name == input.name:
             break
         referenced_input = sub_group.recursive_ref.arguments[input_name]
-        argument_name = self._pipelineparam_full_name(referenced_input)
+        argument_name = referenced_input.name
       else:
         argument_name = param_name
 
       # Preparing argument. It can be pipeline input reference, task output reference or loop item (or loop item attribute
       sanitized_loop_arg_full_name = '---'
       if isinstance(sub_group, dsl.ParallelFor):
-        sanitized_loop_arg_full_name = sanitize_k8s_name(self._pipelineparam_full_name(sub_group.loop_args))
+        # XXX sanitized_loop_arg_full_name = sanitize_k8s_name(self._pipelineparam_full_name(sub_group.loop_args))
+        sanitized_loop_arg_full_name = sanitize_k8s_name(sub_group.loop_args.name)
       arg_ref_full_name = sanitize_k8s_name(param_name)
       # We only care about the reference to the current loop item, not the outer loops
       if isinstance(sub_group, dsl.ParallelFor) and arg_ref_full_name.startswith(sanitized_loop_arg_full_name):
+      #if isinstance(sub_group, dsl.ParallelFor) and arg_ref_full_name == sanitized_loop_arg_full_name:
         if arg_ref_full_name == sanitized_loop_arg_full_name:
           argument_value = '{{item}}'
         elif _for_loop.LoopArgumentVariable.name_is_loop_arguments_variable(param_name):

@@ -36,13 +36,13 @@
           - |-
             echo
           - |-
-            {{inputs.parameters.produce-list-data_list-loop-item}}
+            {{inputs.parameters.data_list-loop-item}}
         "image": |-
           busybox
       "inputs":
         "parameters":
           - "name": |-
-              produce-list-data_list-loop-item
+              data_list-loop-item
       "metadata":
         "annotations":
           "pipelines.kubeflow.org/component_spec": |-
@@ -54,9 +54,9 @@
           - "arguments":
               "parameters":
                 - "name": |-
-                    produce-list-data_list-loop-item
+                    data_list-loop-item
                   "value": |-
-                    {{inputs.parameters.produce-list-data_list-loop-item}}
+                    {{inputs.parameters.data_list-loop-item}}
             "name": |-
               consume-data
             "template": |-
@@ -64,7 +64,7 @@
       "inputs":
         "parameters":
           - "name": |-
-              produce-list-data_list-loop-item
+              data_list-loop-item
       "name": |-
         for-loop-for-loop-00000001-1
     - "dag":
@@ -72,7 +72,7 @@
           - "arguments":
               "parameters":
                 - "name": |-
-                    produce-list-data_list-loop-item
+                    data_list-loop-item
                   "value": |-
                     {{item}}
             "dependencies":
@@ -83,7 +83,7 @@
             "template": |-
               for-loop-for-loop-00000001-1
             "withParam": |-
-              {{tasks.produce-list.outputs.parameters.produce-list-data_list}}
+              {{tasks.produce-list.outputs.parameters.data_list}}
           - "name": |-
               produce-list
             "template": |-
@@ -112,12 +112,12 @@
       "outputs":
         "artifacts":
           - "name": |-
-              produce-list-data_list
+              data_list
             "path": |-
               /tmp/outputs/data_list/data
         "parameters":
           - "name": |-
-              produce-list-data_list
+              data_list
             "valueFrom":
               "path": |-
                 /tmp/outputs/data_list/data

@@ -34,7 +34,7 @@ spec:
       name: flip
       outputs:
         artifacts:
-          - name: flip-output
+          - name: output
             path: /tmp/output
       retryStrategy:
         limit: 5

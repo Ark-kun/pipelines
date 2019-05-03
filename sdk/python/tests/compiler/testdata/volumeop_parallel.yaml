@@ -14,13 +14,13 @@ spec:
   - name: create-pvc
     outputs:
       parameters:
-      - name: create-pvc-manifest
+      - name: manifest
         valueFrom:
           jsonPath: '{}'
-      - name: create-pvc-name
+      - name: name
         valueFrom:
           jsonPath: '{.metadata.name}'
-      - name: create-pvc-size
+      - name: size
         valueFrom:
           jsonPath: '{.status.capacity.storage}'
     resource:
@@ -40,12 +40,12 @@ spec:
         name: create-pvc
     inputs:
       parameters:
-      - name: create-pvc-name
+      - name: name
     name: step1
     volumes:
     - name: create-pvc
       persistentVolumeClaim:
-        claimName: '{{inputs.parameters.create-pvc-name}}'
+        claimName: '{{inputs.parameters.name}}'
   - container:
       args:
       - echo 2 | tee /common/file2
@@ -58,12 +58,12 @@ spec:
         name: create-pvc
     inputs:
       parameters:
-      - name: create-pvc-name
+      - name: name
     name: step2
     volumes:
     - name: create-pvc
       persistentVolumeClaim:
-        claimName: '{{inputs.parameters.create-pvc-name}}'
+        claimName: '{{inputs.parameters.name}}'
   - container:
       args:
       - echo 3 | tee /mnt3/file3
@@ -76,36 +76,36 @@ spec:
         name: create-pvc
     inputs:
       parameters:
-      - name: create-pvc-name
+      - name: name
     name: step3
     volumes:
     - name: create-pvc
       persistentVolumeClaim:
-        claimName: '{{inputs.parameters.create-pvc-name}}'
+        claimName: '{{inputs.parameters.name}}'
   - dag:
       tasks:
       - name: create-pvc
         template: create-pvc
       - arguments:
           parameters:
-          - name: create-pvc-name
-            value: '{{tasks.create-pvc.outputs.parameters.create-pvc-name}}'
+          - name: name
+            value: '{{tasks.create-pvc.outputs.parameters.name}}'
         dependencies:
         - create-pvc
         name: step1
         template: step1
       - arguments:
           parameters:
-          - name: create-pvc-name
-            value: '{{tasks.create-pvc.outputs.parameters.create-pvc-name}}'
+          - name: name
+            value: '{{tasks.create-pvc.outputs.parameters.name}}'
         dependencies:
         - create-pvc
         name: step2
         template: step2
       - arguments:
           parameters:
-          - name: create-pvc-name
-            value: '{{tasks.create-pvc.outputs.parameters.create-pvc-name}}'
+          - name: name
+            value: '{{tasks.create-pvc.outputs.parameters.name}}'
         dependencies:
         - create-pvc
         name: step3

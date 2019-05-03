@@ -24,10 +24,10 @@ spec:
   templates:
   - outputs:
       artifacts:
-      - name: download-downloaded
+      - name: downloaded
         path: "/tmp/results.txt"
       parameters:
-      - name: download-downloaded
+      - name: downloaded
         valueFrom:
           path: "/tmp/results.txt"
     name: download
@@ -46,11 +46,11 @@ spec:
   - name: echo
     inputs:
       parameters:
-      - name: download-downloaded
+      - name: downloaded
     container:
       image: library/bash
       args:
-      - echo {{inputs.parameters.download-downloaded}}
+      - echo {{inputs.parameters.downloaded}}
       command:
       - sh
       - "-c"
@@ -61,8 +61,8 @@ spec:
         template: download
       - arguments:
           parameters:
-          - name: download-downloaded
-            value: "{{tasks.download.outputs.parameters.download-downloaded}}"
+          - name: downloaded
+            value: "{{tasks.download.outputs.parameters.downloaded}}"
         name: echo
         dependencies:
         - download

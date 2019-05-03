@@ -42,10 +42,10 @@ spec:
       - "-c"
     outputs:
       artifacts:
-      - name: download-downloaded
+      - name: downloaded
         path: "/tmp/results.txt"
       parameters:
-      - name: download-downloaded
+      - name: downloaded
         valueFrom:
           path: "/tmp/results.txt"
     sidecars:
@@ -56,11 +56,11 @@ spec:
   - name: echo
     inputs:
       parameters:
-      - name: download-downloaded
+      - name: downloaded
     container:
       image: library/bash
       args:
-      - echo $MSG {{inputs.parameters.download-downloaded}}
+      - echo $MSG {{inputs.parameters.downloaded}}
       command:
       - sh
       - "-c"
@@ -86,8 +86,8 @@ spec:
         - download
         arguments:
           parameters:
-          - name: download-downloaded
-            value: "{{tasks.download.outputs.parameters.download-downloaded}}"
+          - name: downloaded
+            value: "{{tasks.download.outputs.parameters.downloaded}}"
         name: echo
         template: echo
   serviceAccountName: pipeline-runner

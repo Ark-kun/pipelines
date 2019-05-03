@@ -36,10 +36,10 @@ spec:
         template: get-frequent
       - arguments:
           parameters:
-          - name: get-frequent-word
-            value: '{{tasks.get-frequent.outputs.parameters.get-frequent-word}}'
           - name: outputpath
             value: '{{inputs.parameters.outputpath}}'
+          - name: word
+            value: '{{tasks.get-frequent.outputs.parameters.word}}'
         dependencies:
         - get-frequent
         name: save
@@ -74,15 +74,15 @@ spec:
     name: get-frequent
     outputs:
       artifacts:
-      - name: get-frequent-word
+      - name: word
         path: /tmp/message.txt
       parameters:
-      - name: get-frequent-word
+      - name: word
         valueFrom:
           path: /tmp/message.txt
   - container:
       args:
-      - echo {{inputs.parameters.get-frequent-word}} | tee /tmp/results.txt | gsutil
+      - echo {{inputs.parameters.word}} | tee /tmp/results.txt | gsutil
         cp /tmp/results.txt {{inputs.parameters.outputpath}}
       command:
       - sh
@@ -95,8 +95,8 @@ spec:
           nvidia.com/gpu: "2"
     inputs:
       parameters:
-      - name: get-frequent-word
       - name: outputpath
+      - name: word
     metadata:
       annotations:
         tf-version.cloud-tpus.google.com: "1.12"

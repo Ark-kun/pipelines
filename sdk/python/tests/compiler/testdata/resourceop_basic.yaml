@@ -25,12 +25,12 @@ spec:
         name: my-secret
     inputs:
       parameters:
-      - name: create-my-secret-name
+      - name: name
     name: cop
     volumes:
     - name: my-secret
       secret:
-        secretName: '{{inputs.parameters.create-my-secret-name}}'
+        secretName: '{{inputs.parameters.name}}'
   - inputs:
       parameters:
       - name: password
@@ -38,10 +38,10 @@ spec:
     name: create-my-secret
     outputs:
       parameters:
-      - name: create-my-secret-manifest
+      - name: manifest
         valueFrom:
           jsonPath: '{}'
-      - name: create-my-secret-name
+      - name: name
         valueFrom:
           jsonPath: '{.metadata.name}'
     resource:
@@ -53,8 +53,8 @@ spec:
       tasks:
       - arguments:
           parameters:
-          - name: create-my-secret-name
-            value: '{{tasks.create-my-secret.outputs.parameters.create-my-secret-name}}'
+          - name: name
+            value: '{{tasks.create-my-secret.outputs.parameters.name}}'
         dependencies:
         - create-my-secret
         name: cop

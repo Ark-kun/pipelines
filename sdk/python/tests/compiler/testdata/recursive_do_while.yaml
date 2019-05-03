@@ -15,13 +15,13 @@ spec:
       tasks:
       - arguments:
           parameters:
-          - name: flip-output
-            value: '{{inputs.parameters.flip-3-output}}'
+          - name: output
+            value: '{{inputs.parameters.output}}'
         name: graph-flip-component-1
         template: graph-flip-component-1
     inputs:
       parameters:
-      - name: flip-3-output
+      - name: output
     name: condition-2
   - container:
       args:
@@ -34,10 +34,10 @@ spec:
     name: flip
     outputs:
       artifacts:
-      - name: flip-output
+      - name: output
         path: /tmp/output
       parameters:
-      - name: flip-output
+      - name: output
         valueFrom:
           path: /tmp/output
   - container:
@@ -51,7 +51,7 @@ spec:
     name: flip-2
     outputs:
       artifacts:
-      - name: flip-2-output
+      - name: output
         path: /tmp/output
   - container:
       args:
@@ -64,36 +64,36 @@ spec:
     name: flip-3
     outputs:
       artifacts:
-      - name: flip-3-output
+      - name: output
         path: /tmp/output
       parameters:
-      - name: flip-3-output
+      - name: output
         valueFrom:
           path: /tmp/output
   - dag:
       tasks:
       - arguments:
           parameters:
-          - name: flip-3-output
-            value: '{{tasks.flip-3.outputs.parameters.flip-3-output}}'
+          - name: output
+            value: '{{tasks.flip-3.outputs.parameters.output}}'
         dependencies:
         - flip-3
         name: condition-2
         template: condition-2
-        when: '"{{tasks.flip-3.outputs.parameters.flip-3-output}}" == "heads"'
+        when: '"{{tasks.flip-3.outputs.parameters.output}}" == "heads"'
       - dependencies:
         - print
         name: flip-3
         template: flip-3
       - arguments:
           parameters:
-          - name: flip-output
-            value: '{{inputs.parameters.flip-output}}'
+          - name: output
+            value: '{{inputs.parameters.output}}'
         name: print
         template: print
     inputs:
       parameters:
-      - name: flip-output
+      - name: output
     name: graph-flip-component-1
   - dag:
       tasks:
@@ -103,8 +103,8 @@ spec:
         template: flip-2
       - arguments:
           parameters:
-          - name: flip-output
-            value: '{{tasks.flip.outputs.parameters.flip-output}}'
+          - name: output
+            value: '{{tasks.flip.outputs.parameters.output}}'
         dependencies:
         - flip
         - flip-2
@@ -112,8 +112,8 @@ spec:
         template: graph-flip-component-1
       - arguments:
           parameters:
-          - name: flip-output
-            value: '{{tasks.flip.outputs.parameters.flip-output}}'
+          - name: output
+            value: '{{tasks.flip.outputs.parameters.output}}'
         dependencies:
         - flip
         - graph-flip-component-1
@@ -123,18 +123,18 @@ spec:
   - container:
       command:
       - echo
-      - '{{inputs.parameters.flip-output}}'
+      - '{{inputs.parameters.output}}'
       image: alpine:3.6
     inputs:
       parameters:
-      - name: flip-output
+      - name: output
     name: print
   - container:
       command:
       - echo
-      - cool, it is over. {{inputs.parameters.flip-output}}
+      - cool, it is over. {{inputs.parameters.output}}
       image: alpine:3.6
     inputs:
       parameters:
-      - name: flip-output
+      - name: output
     name: print-2
