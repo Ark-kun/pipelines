@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from kfp.dsl.types import _instance_to_dict, check_types, GCSPath
+from kfp.dsl.types import _instance_to_dict, _check_types, GCSPath
 import unittest
 
 class TestTypes(unittest.TestCase):
@@ -27,13 +27,13 @@ class TestTypes(unittest.TestCase):
     }
     self.assertEqual(golden_dict, gcspath_dict)
 
-  def test_check_types(self):
+  def test__check_types(self):
     #Core types
     typeA = {'ArtifactA': {'path_type': 'file', 'file_type':'csv'}}
     typeB = {'ArtifactA': {'path_type': 'file', 'file_type':'csv'}}
-    self.assertTrue(check_types(typeA, typeB))
+    self.assertTrue(_check_types(typeA, typeB))
     typeC = {'ArtifactA': {'path_type': 'file', 'file_type':'tsv'}}
-    self.assertFalse(check_types(typeA, typeC))
+    self.assertFalse(_check_types(typeA, typeC))
 
     # Custom types
     typeA = {
@@ -59,7 +59,7 @@ class TestTypes(unittest.TestCase):
             'Y': 'value3'
         }
     }
-    self.assertFalse(check_types(typeA, typeB))
-    self.assertFalse(check_types(typeA, typeC))
-    self.assertTrue(check_types(typeC, typeA))
-    self.assertFalse(check_types(typeA, typeD))
+    self.assertFalse(_check_types(typeA, typeB))
+    self.assertFalse(_check_types(typeA, typeC))
+    self.assertTrue(_check_types(typeC, typeA))
+    self.assertFalse(_check_types(typeA, typeD))

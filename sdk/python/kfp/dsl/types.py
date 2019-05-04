@@ -83,8 +83,8 @@ class InconsistentTypeException(Exception):
 	'''InconsistencyTypeException is raised when two types are not consistent'''
 	pass
 
-def check_types(checked_type, expected_type):
-	'''check_types checks the type consistency.
+def _check_types(checked_type, expected_type):
+	'''_check_types checks the type consistency.
 	For each of the attribute in checked_type, there is the same attribute in expected_type with the same value.
 	However, expected_type could contain more attributes that checked_type does not contain.
 	Args:

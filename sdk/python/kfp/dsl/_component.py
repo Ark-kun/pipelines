@@ -14,7 +14,7 @@
 
 from ._metadata import _extract_component_metadata
 from ._pipeline_param import PipelineParam
-from .types import check_types, InconsistentTypeException
+from .types import _check_types, InconsistentTypeException
 from ._ops_group import Graph
 import kfp
 
@@ -71,7 +71,7 @@ def component(func):
     if kfp.TYPE_CHECK:
       arg_index = 0
       for arg in args:
-        if isinstance(arg, PipelineParam) and not check_types(arg.param_type.to_dict_or_str(), component_meta.inputs[arg_index].param_type.to_dict_or_str()):
+        if isinstance(arg, PipelineParam) and not _check_types(arg.param_type.to_dict_or_str(), component_meta.inputs[arg_index].param_type.to_dict_or_str()):
           raise InconsistentTypeException('Component "' + component_meta.name + '" is expecting ' + component_meta.inputs[arg_index].name +
                                           ' to be type(' + component_meta.inputs[arg_index].param_type.serialize() +
                                           '), but the passed argument is type(' + arg.param_type.serialize() + ')')
@@ -80,7 +80,7 @@ def component(func):
         for key in kargs:
           if isinstance(kargs[key], PipelineParam):
             for input_spec in component_meta.inputs:
-              if input_spec.name == key and not check_types(kargs[key].param_type.to_dict_or_str(), input_spec.param_type.to_dict_or_str()):
+              if input_spec.name == key and not _check_types(kargs[key].param_type.to_dict_or_str(), input_spec.param_type.to_dict_or_str()):
                 raise InconsistentTypeException('Component "' + component_meta.name + '" is expecting ' + input_spec.name +
                                                 ' to be type(' + input_spec.param_type.serialize() +
                                                 '), but the passed argument is type(' + kargs[key].param_type.serialize() + ')')
