@@ -37,9 +37,9 @@ class TestPythonComponent(unittest.TestCase):
 
     golden_meta = ComponentMeta(name='componentA', description='')
     golden_meta.inputs.append(ParameterMeta(name='a', description='', param_type=TypeMeta(name='ArtifactA', properties={'file_type': 'csv'})))
-    golden_meta.inputs.append(ParameterMeta(name='b', description='', param_type=TypeMeta(name='Integer', properties={'openapi_schema_validator': {"type": "integer"}}), default=12))
+    golden_meta.inputs.append(ParameterMeta(name='b', description='', param_type=TypeMeta(name='Integer', properties={'json_schema': {"type": "integer"}}), default=12))
     golden_meta.inputs.append(ParameterMeta(name='c', description='', param_type=TypeMeta(name='ArtifactB', properties={'path_type':'file', 'file_type': 'tsv'}), default='gs://hello/world'))
-    golden_meta.outputs.append(ParameterMeta(name='model', description='', param_type=TypeMeta(name='Integer', properties={'openapi_schema_validator': {"type": "integer"}})))
+    golden_meta.outputs.append(ParameterMeta(name='model', description='', param_type=TypeMeta(name='Integer', properties={'json_schema': {"type": "integer"}})))
 
     self.assertEqual(containerOp._metadata, golden_meta)
 
@@ -336,7 +336,7 @@ class TestPythonComponent(unittest.TestCase):
     """Test type check at the decorator."""
     kfp.TYPE_CHECK = True
     @component
-    def a_op(field_l: Integer()) -> {'field_m': 'GCSPath', 'field_n': {'customized_type': {'openapi_schema_validator': '{"type": "string", "pattern": "^gs://.*$"}'}}, 'field_o': 'Integer'}:
+    def a_op(field_l: Integer()) -> {'field_m': 'GCSPath', 'field_n': {'customized_type': {'json_schema': '{"type": "string", "pattern": "^gs://.*$"}'}}, 'field_o': 'Integer'}:
       return ContainerOp(
           name = 'operator a',
           image = 'gcr.io/ml-pipeline/component-b',
@@ -351,7 +351,7 @@ class TestPythonComponent(unittest.TestCase):
       )
 
     @component
-    def b_op(field_x: {'customized_type': {'openapi_schema_validator': '{"type": "string", "pattern": "^gs://.*$"}'}},
+    def b_op(field_x: {'customized_type': {'json_schema': '{"type": "string", "pattern": "^gs://.*$"}'}},
         field_y: Integer(),
         field_z: GCSPath()) -> {'output_model_uri': 'GcsUri'}:
       return ContainerOp(
@@ -377,7 +377,7 @@ class TestPythonComponent(unittest.TestCase):
     """Test type check at the decorator."""
     kfp.TYPE_CHECK = True
     @component
-    def a_op(field_l: Integer()) -> {'field_m': 'GCSPath', 'field_n': {'customized_type': {'openapi_schema_validator': '{"type": "string", "pattern": "^gs://.*$"}'}}, 'field_o': 'Integer'}:
+    def a_op(field_l: Integer()) -> {'field_m': 'GCSPath', 'field_n': {'customized_type': {'json_schema': '{"type": "string", "pattern": "^gs://.*$"}'}}, 'field_o': 'Integer'}:
       return ContainerOp(
           name = 'operator a',
           image = 'gcr.io/ml-pipeline/component-b',
@@ -392,7 +392,7 @@ class TestPythonComponent(unittest.TestCase):
       )
 
     @component
-    def b_op(field_x: {'customized_type': {'openapi_schema_validator': '{"type": "string", "pattern": "^gcs://.*$"}'}},
+    def b_op(field_x: {'customized_type': {'json_schema': '{"type": "string", "pattern": "^gcs://.*$"}'}},
         field_y: Integer(),
         field_z: GCSPath()) -> {'output_model_uri': 'GcsUri'}:
       return ContainerOp(

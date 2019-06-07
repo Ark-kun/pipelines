@@ -22,7 +22,7 @@ class TestTypes(unittest.TestCase):
     gcspath_dict = _instance_to_dict(GCSPath())
     golden_dict = {
         'GCSPath': {
-          'openapi_schema_validator': {
+          'json_schema': {
               "type": "string",
               "pattern": "^gs://.*$"
           }

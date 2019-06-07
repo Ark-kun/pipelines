@@ -849,7 +849,7 @@ implementation:
     def test_type_compatibility_check_for_types_with_schema(self):
         component_a = '''\
 outputs:
-  - {name: out1, type: {GCSPath: {openapi_schema_validator: {type: string, pattern: "^gs://.*$" } }}}
+  - {name: out1, type: {GCSPath: {json_schema: {type: string, pattern: "^gs://.*$" } }}}
 implementation:
   container:
     image: busybox
@@ -857,7 +857,7 @@ implementation:
 '''
         component_b = '''\
 inputs:
-  - {name: in1, type: {GCSPath: {openapi_schema_validator: {type: string, pattern: "^gs://.*$" } }}}
+  - {name: in1, type: {GCSPath: {json_schema: {type: string, pattern: "^gs://.*$" } }}}
 implementation:
   container:
     image: busybox
@@ -872,7 +872,7 @@ implementation:
     def test_fail_type_compatibility_check_for_types_with_different_schemas(self):
         component_a = '''\
 outputs:
-  - {name: out1, type: {GCSPath: {openapi_schema_validator: {type: string, pattern: AAA } }}}
+  - {name: out1, type: {GCSPath: {json_schema: {type: string, pattern: AAA } }}}
 implementation:
   container:
     image: busybox
@@ -880,7 +880,7 @@ implementation:
 '''
         component_b = '''\
 inputs:
-  - {name: in1, type: {GCSPath: {openapi_schema_validator: {type: string, pattern: ZZZ } }}}
+  - {name: in1, type: {GCSPath: {json_schema: {type: string, pattern: ZZZ } }}}
 implementation:
   container:
     image: busybox

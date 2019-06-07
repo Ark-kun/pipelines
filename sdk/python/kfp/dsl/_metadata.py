@@ -233,13 +233,13 @@ def _extract_pipeline_metadata(func):
       arg_default = arg_default.value
     if arg in annotations:
       arg_type = _annotation_to_typemeta(annotations[arg])
-    if 'openapi_schema_validator' in arg_type.properties and arg_default is not None:
+    if 'json_schema' in arg_type.properties and arg_default is not None:
       from jsonschema import validate
       import json
-      schema_object = arg_type.properties['openapi_schema_validator']
+      schema_object = arg_type.properties['json_schema']
       if isinstance(schema_object, str):
         # In case the property value for the schema validator is a string instead of a dict.
-        schema_object = json.loads(arg_type.properties['openapi_schema_validator'])
+        schema_object = json.loads(arg_type.properties['json_schema'])
       validate(instance=arg_default, schema=schema_object)
     pipeline_meta.inputs.append(ParameterMeta(name=arg, description='', param_type=arg_type, default=arg_default))
 

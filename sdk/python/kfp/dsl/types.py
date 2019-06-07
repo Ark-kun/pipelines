@@ -20,65 +20,65 @@ class BaseType:
 # Primitive Types
 class Integer(BaseType):
 	def __init__(self):
-		self.openapi_schema_validator = {
+		self.json_schema = {
 			"type": "integer"
 		}
 
 class String(BaseType):
 	def __init__(self):
-		self.openapi_schema_validator = {
+		self.json_schema = {
 			"type": "string"
 		}
 
 class Float(BaseType):
 	def __init__(self):
-		self.openapi_schema_validator = {
+		self.json_schema = {
 			"type": "number"
 		}
 
 class Bool(BaseType):
 	def __init__(self):
-		self.openapi_schema_validator = {
+		self.json_schema = {
 			"type": "boolean"
 		}
 
 class List(BaseType):
 	def __init__(self):
-		self.openapi_schema_validator = {
+		self.json_schema = {
 			"type": "array"
 		}
 
 class Dict(BaseType):
 	def __init__(self):
-		self.openapi_schema_validator = {
+		self.json_schema = {
 			"type": "object",
 		}
 
 # GCP Types
 class GCSPath(BaseType):
 	def __init__(self):
-		self.openapi_schema_validator = {
+		self.json_schema = {
 			"type": "string",
 			"pattern": "^gs://.*$"
 		}
 
 class GCRPath(BaseType):
 	def __init__(self):
-		self.openapi_schema_validator = {
+		self.json_schema = {
 			"type": "string",
 			"pattern": "^.*gcr\\.io/.*$"
 		}
 
 class GCPRegion(BaseType):
 	def __init__(self):
-		self.openapi_schema_validator = {
+		self.json_schema = {
 			"type": "string"
 		}
 
 class GCPProjectID(BaseType):
 	'''MetaGCPProjectID: GCP project id'''
 	def __init__(self):
-		self.openapi_schema_validator = {
+		self.json_schema = {
 			"type": "string"
 		}
 
@@ -86,7 +86,7 @@ class GCPProjectID(BaseType):
 class LocalPath(BaseType):
 	#TODO: add restriction to path
 	def __init__(self):
-		self.openapi_schema_validator = {
+		self.json_schema = {
 			"type": "string"
 		}
 

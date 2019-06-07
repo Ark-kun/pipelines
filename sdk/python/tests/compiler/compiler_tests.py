@@ -435,7 +435,7 @@ class TestCompiler(unittest.TestCase):
   def test_type_checking_with_json_schema(self):
     """Test type check pipeline parameters against the json schema."""
     @component
-    def a_op(field_m: {'GCRPath': {'openapi_schema_validator': {"type": "string", "pattern": "^.*gcr\\.io/.*$"}}}, field_o: 'Integer'):
+    def a_op(field_m: {'GCRPath': {'json_schema': {"type": "string", "pattern": "^.*gcr\\.io/.*$"}}}, field_o: 'Integer'):
       return ContainerOp(
           name = 'operator a',
           image = 'gcr.io/ml-pipeline/component-b',
@@ -449,7 +449,7 @@ class TestCompiler(unittest.TestCase):
         name='p1',
         description='description1'
     )
-    def my_pipeline(a: {'GCRPath': {'openapi_schema_validator': {"type": "string", "pattern": "^.*gcr\\.io/.*$"}}}='good', b: 'Integer'=12):
+    def my_pipeline(a: {'GCRPath': {'json_schema': {"type": "string", "pattern": "^.*gcr\\.io/.*$"}}}='good', b: 'Integer'=12):
       a_op(field_m=a, field_o=b)
 
     test_data_dir = os.path.join(os.path.dirname(__file__), 'testdata')
