@@ -73,8 +73,8 @@ def component(func):
       for arg in args:
         if isinstance(arg, PipelineParam) and not check_types(arg.param_type.to_dict_or_str(), component_meta.inputs[arg_index].param_type.to_dict_or_str()):
           raise InconsistentTypeException('Component "' + component_meta.name + '" is expecting ' + component_meta.inputs[arg_index].name +
-                                          ' to be type(' + component_meta.inputs[arg_index].param_type.serialize() +
-                                          '), but the passed argument is type(' + arg.param_type.serialize() + ')')
+                                          ' to be type(' + str(component_meta.inputs[arg_index].param_type) +
+                                          '), but the passed argument is type(' + str(arg.param_type) + ')')
         arg_index += 1
       if kargs is not None:
         for key in kargs:
@@ -82,8 +82,8 @@ def component(func):
             for input_spec in component_meta.inputs:
               if input_spec.name == key and not check_types(kargs[key].param_type.to_dict_or_str(), input_spec.param_type.to_dict_or_str()):
                 raise InconsistentTypeException('Component "' + component_meta.name + '" is expecting ' + input_spec.name +
-                                                ' to be type(' + input_spec.param_type.serialize() +
-                                                '), but the passed argument is type(' + kargs[key].param_type.serialize() + ')')
+                                                ' to be type(' + str(input_spec.param_type) +
+                                                '), but the passed argument is type(' + str(kargs[key].param_type) + ')')
 
     container_op = func(*args, **kargs)
     container_op._set_metadata(component_meta)

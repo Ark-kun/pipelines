@@ -68,6 +68,9 @@ class TypeMeta(BaseMeta):
   def serialize(self):
     return str(self.to_dict_or_str())
 
+  def __str__(self):
+    return str(self.to_dict_or_str())
+
   @staticmethod
   def deserialize(payload):
     '''deserialize expects two types of input: dict and str
