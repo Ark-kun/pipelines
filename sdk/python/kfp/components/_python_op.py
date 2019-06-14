@@ -62,33 +62,33 @@ def _capture_function_code_using_cloudpickle(func, modules_to_capture: List[str]
         func_pickle = cloudpickle.dumps(func, pickle.DEFAULT_PROTOCOL)
     finally:
         sys.modules.update(old_modules)
-    func_code = '{func_name} = pickle.loads({func_pickle})'.format(func_name=func.__name__, func_pickle=repr(func_pickle))
 
-    code_lines = [
-        'try:',
-        '    import cloudpickle as _cloudpickle',
-        'except ImportError:',
-        '    import subprocess',
-        '    import sys',
-        '    try:',
-        '        print("cloudpickle is not installed. Installing it globally", file=sys.stderr)',
-        '        subprocess.run([sys.executable, "-m", "pip", "install", "cloudpickle==1.1.1", "--quiet"], env={"PIP_DISABLE_PIP_VERSION_CHECK": "1"}, check=True)',
-        '        print("Installed cloudpickle globally", file=sys.stderr)',
-        '    except:',
-        '        print("Failed to install cloudpickle globally. Installing for the current user.", file=sys.stderr)',
-        '        subprocess.run([sys.executable, "-m", "pip", "install", "cloudpickle==1.1.1", "--user", "--quiet"], env={"PIP_DISABLE_PIP_VERSION_CHECK": "1"}, check=True)',
-        '        print("Installed cloudpickle for the current user", file=sys.stderr)',
-        '        import site',
-        '        sys.path.append(site.getusersitepackages())', # Enable loading from user-installed package directory. Python does not add it to sys.path if it was empty at start. Running pip does not refresh `sys.path`.
-        '    import cloudpickle as _cloudpickle',
-        '    print("cloudpickle loaded successfully after installing.", file=sys.stderr)',
-        '',
-        'import pickle',
-        '',
-        func_code,
-    ]
+    function_loading_code = '''\
+try:
+    import cloudpickle as _cloudpickle
+except ImportError:
+    import subprocess
+    import sys
+    try:
+        print("cloudpickle is not installed. Installing it globally", file=sys.stderr)
+        subprocess.run([sys.executable, "-m", "pip", "install", "cloudpickle==1.1.1", "--quiet"], env={"PIP_DISABLE_PIP_VERSION_CHECK": "1"}, check=True)
+        print("Installed cloudpickle globally", file=sys.stderr)
+    except:
+        print("Failed to install cloudpickle globally. Installing for the current user.", file=sys.stderr)
+        subprocess.run([sys.executable, "-m", "pip", "install", "cloudpickle==1.1.1", "--user", "--quiet"], env={"PIP_DISABLE_PIP_VERSION_CHECK": "1"}, check=True)
+        print("Installed cloudpickle for the current user", file=sys.stderr)
+        # Enable loading from user-installed package directory. Python does not add it to sys.path if it was empty at start. Running pip does not refresh `sys.path`.
+        import site
+        sys.path.append(site.getusersitepackages())
+    import cloudpickle as _cloudpickle
+    print("cloudpickle loaded successfully after installing.", file=sys.stderr)
 
-    return '\n'.join(code_lines)
+import pickle
+
+{func_name} = pickle.loads({func_pickle})
+'''.format(func_name=func.__name__, func_pickle=repr(func_pickle))
+
+    return function_loading_code
 
 
 def _func_to_component_spec(func, extra_code='', base_image=_default_base_image, modules_to_capture: List[str] = None) -> ComponentSpec:
