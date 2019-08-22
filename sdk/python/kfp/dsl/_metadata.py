@@ -15,7 +15,7 @@
 from typing import Dict, List
 from abc import ABCMeta, abstractmethod
 from .types import BaseType, _check_valid_type_dict, _instance_to_dict
-from ..components._structures import InputSpec, OutputSpec
+from ..components._structures import ComponentSpec, InputSpec, OutputSpec
 
 class BaseMeta(object):
   __metaclass__ = ABCMeta
@@ -54,24 +54,7 @@ class ComponentMeta(BaseMeta):
             'outputs': [ output.to_dict() for output in self.outputs ]
             }
 
-# Add a pipeline level metadata calss here.
-# If one day we combine the component and pipeline yaml, ComponentMeta and PipelineMeta will become one, too.
-class PipelineMeta(BaseMeta):
-  def __init__(
-      self,
-      name: str,
-      description: str = '',
-      inputs: List[InputSpec] = None
-  ):
-    self.name = name
-    self.description = description
-    self.inputs = [] if inputs is None else inputs
-
-  def to_dict(self):
-    return {'name': self.name,
-            'description': self.description,
-            'inputs': [ input.to_dict() for input in self.inputs ]
-            }
+# If one day we combine the component and pipeline yaml, ComponentMeta and ComponentSpec will become one, too.
 
 def _annotation_to_typemeta(annotation):
   '''_annotation_to_type_meta converts an annotation to a type structure
@@ -162,10 +145,11 @@ def _extract_pipeline_metadata(func):
     for arg, default in zip(reversed(fullargspec.args), reversed(fullargspec.defaults)):
       arg_defaults[arg] = default
 
-  # Construct the PipelineMeta
-  pipeline_meta = PipelineMeta(
+  # Construct the ComponentSpec
+  pipeline_meta = ComponentSpec(
     name=getattr(func, '_pipeline_name', func.__name__),
-    description=getattr(func, '_pipeline_description', func.__doc__)
+    description=getattr(func, '_pipeline_description', func.__doc__),
+    inputs=[],
   )
   # Inputs
   for arg in args:
