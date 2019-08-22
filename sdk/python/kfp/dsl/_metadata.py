@@ -15,6 +15,7 @@
 from typing import Dict, List
 from abc import ABCMeta, abstractmethod
 from .types import BaseType, _check_valid_type_dict, _instance_to_dict
+from ..components._structures import InputSpec, OutputSpec
 
 class BaseMeta(object):
   __metaclass__ = ABCMeta
@@ -33,30 +34,13 @@ class BaseMeta(object):
     return self.__dict__ == other.__dict__
 
 
-class ParameterMeta(BaseMeta):
-  def __init__(self,
-      name: str,
-      description: str = '',
-      param_type = None,
-      default = None):
-    self.name = name
-    self.description = description
-    self.param_type = param_type
-    self.default = default
-
-  def to_dict(self):
-    return {'name': self.name,
-            'description': self.description,
-            'type': self.param_type or '',
-            'default': self.default}
-
 class ComponentMeta(BaseMeta):
   def __init__(
       self,
       name: str,
       description: str = '',
-      inputs: List[ParameterMeta] = None,
-      outputs: List[ParameterMeta] = None
+      inputs: List[InputSpec] = None,
+      outputs: List[OutputSpec] = None
   ):
     self.name = name
     self.description = description
@@ -77,7 +61,7 @@ class PipelineMeta(BaseMeta):
       self,
       name: str,
       description: str = '',
-      inputs: List[ParameterMeta] = None
+      inputs: List[InputSpec] = None
   ):
     self.name = name
     self.description = description
@@ -138,13 +122,13 @@ def _extract_component_metadata(func):
       arg_default = arg_default.value
     if arg in annotations:
       arg_type = _annotation_to_typemeta(annotations[arg])
-    inputs.append(ParameterMeta(name=arg, description='', param_type=arg_type, default=arg_default))
+    inputs.append(InputSpec(name=arg, description='', type=arg_type, default=arg_default))
   # Outputs
   outputs = []
   if 'return' in annotations:
     for output in annotations['return']:
       arg_type = _annotation_to_typemeta(annotations['return'][output])
-      outputs.append(ParameterMeta(name=output, description='', param_type=arg_type))
+      outputs.append(OutputSpec(name=output, description='', type=arg_type))
 
   #TODO: add descriptions to the metadata
   #docstring parser:
@@ -200,7 +184,7 @@ def _extract_pipeline_metadata(func):
         # In case the property value for the schema validator is a string instead of a dict.
         schema_object = json.loads(schema_object)
       validate(instance=arg_default, schema=schema_object)
-    pipeline_meta.inputs.append(ParameterMeta(name=arg, description='', param_type=arg_type, default=arg_default))
+    pipeline_meta.inputs.append(InputSpec(name=arg, description='', type=arg_type, default=arg_default))
 
   #TODO: add descriptions to the metadata
   #docstring parser:

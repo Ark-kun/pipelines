@@ -1096,7 +1096,7 @@ class ContainerOp(BaseOp):
                 output_type = self.outputs[output].param_type
                 for output_meta in self._metadata.outputs:
                     if output_meta.name == output:
-                        output_type = output_meta.param_type
+                        output_type = output_meta.type
                 self.outputs[output].param_type = output_type
 
             self.output = None
