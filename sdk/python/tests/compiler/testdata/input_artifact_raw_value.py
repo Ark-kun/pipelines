@@ -27,7 +27,7 @@ def component_with_inline_input_artifact(text: str):
     return dsl.ContainerOp(
         name='component_with_inline_input_artifact',
         image='alpine',
-        command=['cat', dsl.InputArtifactArgument(text, path='/tmp/inputs/text/data', input='text')], # path and input are optional
+        command=['cat', dsl.ArtifactArgument(text, path='/tmp/inputs/text/data', input='text')], # path and input are optional
     )
 
 
@@ -36,8 +36,8 @@ def component_with_input_artifact(text):
 
     return dsl.ContainerOp(
         name='component_with_input_artifact',
-        input_artifact_arguments=[
-            dsl.InputArtifactArgument(argument=text, path='/tmp/inputs/text/data', input='text'), # path and input are optional
+        artifact_arguments=[
+            dsl.ArtifactArgument(argument=text, path='/tmp/inputs/text/data', input='text'), # path and input are optional
         ],
         image='alpine',
         command=['cat', '/tmp/inputs/text/data'],

@@ -903,11 +903,53 @@ class BaseOp(object):
 from ._pipeline_volume import PipelineVolume  # The import is here to prevent circular reference problems.
 
 
-class InputArtifactArgument:
+class ArtifactArgument:
     def __init__(self, argument, input=None, path=None):
         self.argument = argument
         self.input = input
         self.path = path
+
+
+class ArtifactArgumentPath:
+    def __init__(self, argument, input=None, path=None):
+        pass
+
+
+class InputArtifactPath:
+    def __init__(self, input, path=None):
+        pass
+
+
+class InputArtifactArgumentPath:
+    def __init__(self, argument, input=None, path=None):
+        pass
+
+
+class ArgumentArtifactPath:
+    def __init__(self, argument, path=None):
+        pass
+
+
+class InputArgumentPath:
+    def __init__(self, argument, path=None):
+        pass
+
+
+class OutputArtifactPath:
+    def __init__(self, output_name, path=None):
+        pass
+
+
+class OutputDataPath:
+    def __init__(self, output_name, path=None):
+        pass
+
+
+class RawArtifact:
+    pass
+
+class HttpArtifact:
+    pass
 
 
 class ContainerOp(BaseOp):
@@ -968,7 +1010,7 @@ class ContainerOp(BaseOp):
       init_containers: List[UserContainer] = None,
       sidecars: List[Sidecar] = None,
       container_kwargs: Dict = None,
-      input_artifact_arguments : List[InputArtifactArgument] = None,
+      artifact_arguments : List[ArtifactArgument] = None,
       file_outputs: Dict[str, str] = None,
       output_artifact_paths : Dict[str, str]=None,
       artifact_location: V1alpha1ArtifactLocation=None,
@@ -992,9 +1034,14 @@ class ContainerOp(BaseOp):
                     together with the `main` container.
           container_kwargs: the dict of additional keyword arguments to pass to the
                             op's `Container` definition.
-          input_artifact_arguments: Maps artifact inputs to the artifact argument values and paths.
-              Only artifact argument value is required.
+          paths_for_input_artifacts = {path => art_arg}
+          artifact_argument_paths = {art_arg => path}
+
+
+          artifact_argument_paths: Optional. Maps inputs artifact arguments to the local artifact placement paths.
               At pipeline run time, the value of the artifact argument is saved to a local file with specified path.
+              This parameter is only needed when the input file paths are hard-coded in the program.
+              Otherwise it's better to pass input artifact placement paths by including artifact
           file_outputs: Maps output labels to local file paths. At pipeline run time,
               the value of a PipelineParam is saved to its corresponding local file. It's
               one way for outside world to receive outputs of the container.
@@ -1019,7 +1066,7 @@ class ContainerOp(BaseOp):
 
         def resolve_artifact_argument(artarg):
             from ..components._components import _generate_input_file_name
-            if not isinstance(artarg, InputArtifactArgument):
+            if not isinstance(artarg, ArtifactArgument):
                 return artarg
             input_name = getattr(artarg.input, 'name', artarg.input) or ('input-' + str(len(artifact_arguments)))
             input_path = artarg.path or _generate_input_file_name(input_name)
@@ -1030,7 +1077,7 @@ class ContainerOp(BaseOp):
             artifact_arguments[input_name] = artarg.argument
             return input_path
 
-        for artarg in input_artifact_arguments or []:
+        for artarg in artifact_arguments or []:
             resolve_artifact_argument(artarg)
 
         if isinstance(command, Sequence) and not isinstance(command, str):
