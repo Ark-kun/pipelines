@@ -198,10 +198,13 @@ def _create_task_factory_from_component_spec(component_spec:ComponentSpec, compo
         func_docstring_lines.append(component_spec.description)
     
     inputs_list = component_spec.inputs or [] #List[InputSpec]
+    outputs_list = component_spec.outputs or []
     input_names = [input.name for input in inputs_list]
+    output_names = [output.name for output in outputs_list]
 
     #Creating the name translation tables : Original <-> Pythonic 
     input_name_to_pythonic = generate_unique_name_conversion_table(input_names, _sanitize_python_function_name)
+    output_name_to_pythonic = generate_unique_name_conversion_table(output_names, _sanitize_python_function_name)
     pythonic_name_to_input_name = {v: k for k, v in input_name_to_pythonic.items()}
 
     if component_ref is None:
@@ -238,7 +241,11 @@ def _create_task_factory_from_component_spec(component_spec:ComponentSpec, compo
             component_ref=component_ref,
             arguments=arguments,
         )
+
         task._init_outputs()
+        # task.outputs dict object will also have an attribute for every output name i.e. task1.outputs.output_1
+        for output_name, output_ref_arg in task.outputs.items():
+            setattr(task.outputs, output_name_to_pythonic[output_name], output_ref_arg)
 
         if _created_task_transformation_handler:
             task = _created_task_transformation_handler[-1](task)

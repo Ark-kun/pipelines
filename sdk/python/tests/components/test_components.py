@@ -588,6 +588,25 @@ implementation:
 
         self.assertEqual(list(task.outputs.keys()), ['out 1', 'out 2'])
 
+    def test_check_task_spec_outputs_attributes(self):
+        component_text = '''\
+outputs:
+- {name: out 1}
+- {name: out 2}
+implementation:
+  container:
+    image: busybox
+    command: [touch, {outputPath: out 1}, {outputPath: out 2}]
+'''
+        op = comp.load_component_from_text(component_text)
+        with no_task_resolving_context():
+          task = op()
+
+        self.assertEqual(task.outputs.out_1.task_output.output_name, 'out 1')
+        self.assertEqual(task.outputs.out_2.task_output.output_name, 'out 2')
+        self.assertEqual(task.outputs.out_1.task_output.task, task)
+        self.assertEqual(task.outputs.out_2.task_output.task, task)
+
     def test_type_compatibility_check_for_simple_types(self):
         component_a = '''\
 outputs:
