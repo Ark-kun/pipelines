@@ -801,3 +801,19 @@ class Compiler(object):
       kfp.TYPE_CHECK = type_check_old_value
 
 
+  def _compile_task(self, task):
+    if isinstance(task, dsl._container_op.BaseOp):
+      # TODO: Create parametrized pipeline with task arguments being default values
+      def my_pipeline():
+        dsl._container_op._register_op_handler(task)
+      
+      my_pipeline.__name__ = task.name + ' pipeline'
+      return self._compile(my_pipeline)
+
+  def compile_task(self, task, package_path):
+    if isinstance(task, dsl._container_op.BaseOp):
+      def my_pipeline():
+        dsl._container_op._register_op_handler(task)
+      
+      my_pipeline.__name__ = task.name + ' pipeline'
+      self.compile(my_pipeline, package_path)
