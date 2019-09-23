@@ -99,8 +99,8 @@ class PipelineVolume(V1Volume):
                 if parentdep_name == olddep:
                     return True
                 else:
-                    from ._pipeline import _CompilationContext
-                    parentdep = _CompilationContext.get_default_pipeline(
+                    from ..dsl._active_compilation_context import get_active_pipeline_context
+                    parentdep = get_active_pipeline_context(
                     ).ops[parentdep_name]
                     if parentdep:
                         if implies(parentdep, olddep):

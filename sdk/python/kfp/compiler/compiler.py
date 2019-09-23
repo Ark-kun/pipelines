@@ -32,7 +32,7 @@ from ..components.structures import InputSpec
 from ..dsl._metadata import _extract_pipeline_metadata
 from ..dsl._ops_group import OpsGroup
 
-from ..dsl._pipeline import _CompilationContext
+from ..dsl._compilation_context import _CompilationContext
 
 class Compiler(object):
   """DSL Compiler.

@@ -17,7 +17,7 @@ import uuid
 from kfp.dsl import _for_loop, _pipeline_param
 
 from . import _container_op
-from ._pipeline import _CompilationContext
+from ..dsl._active_compilation_context import get_active_pipeline_context
 from ._pipeline_param import ConditionOperator
 
 
@@ -54,12 +54,12 @@ class OpsGroup(object):
     Args:
       group_type (str): one of 'pipeline', 'exit_handler', 'condition', and 'graph'.
       name (str): the name before conversion. """
-    if not _CompilationContext.get_default_pipeline():
+    if not get_active_pipeline_context():
       raise ValueError('Default pipeline not defined.')
     if name is None:
       return None
     name_pattern = '^' + (group_type + '-' + name + '-').replace('_', '-') + '[\d]+$'
-    for ops_group_already_in_pipeline in _CompilationContext.get_default_pipeline().groups:
+    for ops_group_already_in_pipeline in get_active_pipeline_context().groups:
       import re
       if ops_group_already_in_pipeline.type == group_type \
               and re.match(name_pattern ,ops_group_already_in_pipeline.name):
@@ -68,26 +68,26 @@ class OpsGroup(object):
 
   def _make_name_unique(self):
     """Generate a unique opsgroup name in the pipeline"""
-    if not _CompilationContext.get_default_pipeline():
+    if not get_active_pipeline_context():
       raise ValueError('Default pipeline not defined.')
 
     self.name = (self.type + '-' + ('' if self.name is None else self.name + '-') +
-                   str(_CompilationContext.get_default_pipeline().get_next_group_id()))
+                   str(get_active_pipeline_context().get_next_group_id()))
     self.name = self.name.replace('_', '-')
 
   def __enter__(self):
-    if not _CompilationContext.get_default_pipeline():
+    if not get_active_pipeline_context():
       raise ValueError('Default pipeline not defined.')
 
     self.recursive_ref = self._get_matching_opsgroup_already_in_pipeline(self.type, self.name)
     if not self.recursive_ref:
       self._make_name_unique()
 
-    _CompilationContext.get_default_pipeline().push_ops_group(self)
+    get_active_pipeline_context().push_ops_group(self)
     return self
 
   def __exit__(self, *args):
-    _CompilationContext.get_default_pipeline().pop_ops_group()
+    get_active_pipeline_context().pop_ops_group()
 
   def after(self, dependency):
     """Specify explicit dependency on another op."""

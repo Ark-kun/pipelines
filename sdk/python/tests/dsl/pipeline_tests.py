@@ -14,6 +14,8 @@
 
 import kfp
 from kfp.dsl import ContainerOp, pipeline
+from kfp.dsl._active_compilation_context import get_active_pipeline_context
+from kfp.dsl._compilation_context import _CompilationContext
 from kfp.dsl._metadata import _extract_pipeline_metadata
 from kfp.dsl.types import GCSPath, Integer
 from kfp.components.structures import ComponentSpec, InputSpec
@@ -25,11 +27,11 @@ class TestPipeline(unittest.TestCase):
   def test_basic(self):
     """Test basic usage."""
     with _CompilationContext('somename') as p:
-      self.assertTrue(_CompilationContext.get_default_pipeline() is not None)
+      self.assertTrue(get_active_pipeline_context() is not None)
       op1 = ContainerOp(name='op1', image='image')
       op2 = ContainerOp(name='op2', image='image')
       
-    self.assertTrue(_CompilationContext.get_default_pipeline() is None)
+    self.assertTrue(get_active_pipeline_context() is None)
     self.assertEqual(p.ops['op1'].name, 'op1')
     self.assertEqual(p.ops['op2'].name, 'op2')
 

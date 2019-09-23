@@ -17,7 +17,7 @@ import kfp.dsl as dsl
 from kfp.dsl import component, graph_component
 from kfp.dsl.types import Integer, GCSPath, InconsistentTypeException
 from kfp.dsl import ContainerOp, PipelineParam
-from kfp.dsl._pipeline import _CompilationContext
+from kfp.dsl._compilation_context import _CompilationContext
 from kfp.components._structures import ComponentSpec, InputSpec, OutputSpec
 import unittest
 

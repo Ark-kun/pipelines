@@ -14,7 +14,7 @@
 
 import kfp.dsl as dsl
 from kfp.dsl import PipelineParam, ContainerOp, ExitHandler, OpsGroup
-from kfp.dsl._pipeline import _CompilationContext
+from kfp.dsl._compilation_context import _CompilationContext
 import unittest
 
 
