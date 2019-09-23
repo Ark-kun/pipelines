@@ -32,6 +32,7 @@ from ..components.structures import InputSpec
 from ..dsl._metadata import _extract_pipeline_metadata
 from ..dsl._ops_group import OpsGroup
 
+from ..dsl._pipeline import _CompilationContext
 
 class Compiler(object):
   """DSL Compiler.
@@ -787,7 +788,7 @@ class Compiler(object):
           break
       args_list.append(dsl.PipelineParam(sanitize_k8s_name(arg_name, True), param_type=arg_type))
 
-    with dsl.Pipeline(pipeline_name) as dsl_pipeline:
+    with _CompilationContext(pipeline_name) as dsl_pipeline:
       pipeline_func(*args_list)
 
     pipeline_conf = pipeline_conf or dsl_pipeline.conf # Configuration passed to the compiler is overriding. Unfortunately, it's not trivial to detect whether the dsl_pipeline.conf was ever modified.

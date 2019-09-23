@@ -17,7 +17,8 @@ import uuid
 from kfp.dsl import _for_loop, _pipeline_param
 
 from . import _container_op
-from . import _pipeline
+from ._pipeline import _CompilationContext
+from ._pipeline_param import ConditionOperator
 
 
 class OpsGroup(object):
@@ -53,12 +54,12 @@ class OpsGroup(object):
     Args:
       group_type (str): one of 'pipeline', 'exit_handler', 'condition', and 'graph'.
       name (str): the name before conversion. """
-    if not _pipeline.Pipeline.get_default_pipeline():
+    if not _CompilationContext.get_default_pipeline():
       raise ValueError('Default pipeline not defined.')
     if name is None:
       return None
     name_pattern = '^' + (group_type + '-' + name + '-').replace('_', '-') + '[\d]+$'
-    for ops_group_already_in_pipeline in _pipeline.Pipeline.get_default_pipeline().groups:
+    for ops_group_already_in_pipeline in _CompilationContext.get_default_pipeline().groups:
       import re
       if ops_group_already_in_pipeline.type == group_type \
               and re.match(name_pattern ,ops_group_already_in_pipeline.name):
@@ -67,26 +68,26 @@ class OpsGroup(object):
 
   def _make_name_unique(self):
     """Generate a unique opsgroup name in the pipeline"""
-    if not _pipeline.Pipeline.get_default_pipeline():
+    if not _CompilationContext.get_default_pipeline():
       raise ValueError('Default pipeline not defined.')
 
     self.name = (self.type + '-' + ('' if self.name is None else self.name + '-') +
-                   str(_pipeline.Pipeline.get_default_pipeline().get_next_group_id()))
+                   str(_CompilationContext.get_default_pipeline().get_next_group_id()))
     self.name = self.name.replace('_', '-')
 
   def __enter__(self):
-    if not _pipeline.Pipeline.get_default_pipeline():
+    if not _CompilationContext.get_default_pipeline():
       raise ValueError('Default pipeline not defined.')
 
     self.recursive_ref = self._get_matching_opsgroup_already_in_pipeline(self.type, self.name)
     if not self.recursive_ref:
       self._make_name_unique()
 
-    _pipeline.Pipeline.get_default_pipeline().push_ops_group(self)
+    _CompilationContext.get_default_pipeline().push_ops_group(self)
     return self
 
   def __exit__(self, *args):
-    _pipeline.Pipeline.get_default_pipeline().pop_ops_group()
+    _CompilationContext.get_default_pipeline().pop_ops_group()
 
   def after(self, dependency):
     """Specify explicit dependency on another op."""

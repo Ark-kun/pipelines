@@ -13,7 +13,8 @@
 # limitations under the License.
 
 import kfp.dsl as dsl
-from kfp.dsl import Pipeline, PipelineParam, ContainerOp, ExitHandler, OpsGroup, Condition
+from kfp.dsl import PipelineParam, ContainerOp, ExitHandler, OpsGroup
+from kfp.dsl._pipeline import _CompilationContext
 import unittest
 
 
@@ -21,7 +22,7 @@ class TestOpsGroup(unittest.TestCase):
   
   def test_basic(self):
     """Test basic usage."""
-    with Pipeline('somename') as p:
+    with _CompilationContext('somename') as p:
       self.assertEqual(1, len(p.groups))
       with OpsGroup(group_type='exit_handler'):
         op1 = ContainerOp(name='op1', image='image')
@@ -49,7 +50,7 @@ class TestOpsGroup(unittest.TestCase):
 
   def test_basic_recursive_opsgroups(self):
     """Test recursive opsgroups."""
-    with Pipeline('somename') as p:
+    with _CompilationContext('somename') as p:
       self.assertEqual(1, len(p.groups))
 
       # When a graph opsgraph is called.
@@ -67,7 +68,7 @@ class TestOpsGroup(unittest.TestCase):
 
   def test_recursive_opsgroups_with_prefix_names(self):
     """Test recursive opsgroups."""
-    with Pipeline('somename') as p:
+    with _CompilationContext('somename') as p:
       self.assertEqual(1, len(p.groups))
 
       # When a graph opsgraph is called.
@@ -86,7 +87,7 @@ class TestExitHandler(unittest.TestCase):
   
   def test_basic(self):
     """Test basic usage."""
-    with Pipeline('somename') as p:
+    with _CompilationContext('somename') as p:
       exit_op = ContainerOp(name='exit', image='image')
       with ExitHandler(exit_op=exit_op):
         op1 = ContainerOp(name='op1', image='image')
@@ -99,7 +100,7 @@ class TestExitHandler(unittest.TestCase):
 
   def test_invalid_exit_op(self):
     with self.assertRaises(ValueError):
-      with Pipeline('somename') as p:
+      with _CompilationContext('somename') as p:
         op1 = ContainerOp(name='op1', image='image')
         exit_op = ContainerOp(name='exit', image='image')
         exit_op.after(op1)

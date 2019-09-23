@@ -20,8 +20,6 @@ from kubernetes.client.models import (
     V1Volume, V1PersistentVolumeClaimVolumeSource
 )
 
-from . import _pipeline
-
 
 def prune_none_dict_values(d: dict) -> dict:
     return {
@@ -101,7 +99,8 @@ class PipelineVolume(V1Volume):
                 if parentdep_name == olddep:
                     return True
                 else:
-                    parentdep = _pipeline.Pipeline.get_default_pipeline(
+                    from ._pipeline import _CompilationContext
+                    parentdep = _CompilationContext.get_default_pipeline(
                     ).ops[parentdep_name]
                     if parentdep:
                         if implies(parentdep, olddep):

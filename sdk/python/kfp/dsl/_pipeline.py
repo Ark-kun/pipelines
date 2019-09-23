@@ -13,11 +13,7 @@
 # limitations under the License.
 
 
-from . import _container_op
-from . import _resource_op
-from . import _ops_group
-from ..components._naming import _make_name_unique_by_adding_index
-from ..components import _dsl_bridge, _components
+
 import sys
 
 
@@ -134,14 +130,41 @@ class PipelineConf():
     self.op_transformers.append(transformer)
 
 
+
+_current_pipeline_conf = None
+
+
 def get_pipeline_conf():
   """Configure the pipeline level setting to the current pipeline
     Note: call the function inside the user defined pipeline function.
   """
-  return Pipeline.get_default_pipeline().conf
+  return _current_pipeline_conf
+
+#TODO: Add back the Pipeline.add_pipeline(name, description) deprecated function that TFX has taken dependency on.
+
+
+class Pipeline:
+  @staticmethod
+  @DeprecationWarning
+  def add_pipeline(name, description, func):
+    """Add a pipeline function with the specified name and description."""
+    import warnings
+    warnings.warn("Pipeline.add_pipeline method is part of the private compiler API which is not supported and no longer needed. Please use the optional @pipeline decorator to mark piepline functions.", DeprecationWarning)
+
+    # Applying the @pipeline decorator to the pipeline function
+    func = pipeline(name=name, description=description)(func)
+
+
+from ..components import _dsl_bridge, _components
+from ..components._naming import _make_name_unique_by_adding_index
+from ..dsl import _container_op
+from ..dsl import _ops_group
+from ..dsl._pipeline import pipeline, PipelineConf
+from ..dsl import _pipeline
+
 
 #TODO: Pipeline is in fact an opsgroup, refactor the code.
-class Pipeline():
+class _CompilationContext():
   """A pipeline contains a list of operators.
 
   This class is not supposed to be used by pipeline authors since pipeline authors can use
@@ -157,13 +180,13 @@ class Pipeline():
   ```
   """
 
-  # _default_pipeline is set when it (usually a compiler) runs "with Pipeline()"
+  # _default_pipeline is set when it (usually a compiler) runs "with _CompilationContext()"
   _default_pipeline = None
 
   @staticmethod
   def get_default_pipeline():
     """Get default pipeline. """
-    return Pipeline._default_pipeline
+    return _CompilationContext._default_pipeline
 
   @staticmethod
   def add_pipeline(name, description, func):
@@ -182,14 +205,15 @@ class Pipeline():
     # Add the root group.
     self.groups = [_ops_group.OpsGroup('pipeline', name=name)]
     self.group_id = 0
-    self.conf = PipelineConf()
     self._metadata = None
 
   def __enter__(self):
-    if Pipeline._default_pipeline:
+    if _CompilationContext._default_pipeline:
       raise Exception('Nested pipelines are not allowed.')
 
-    Pipeline._default_pipeline = self
+    _CompilationContext._default_pipeline = self
+    _pipeline._current_pipeline_conf = PipelineConf()
+    self.conf = _pipeline._current_pipeline_conf
     self._old_container_task_constructor = _components._container_task_constructor
     _components._container_task_constructor = _dsl_bridge._create_container_op_from_component_and_arguments
 
@@ -201,7 +225,8 @@ class Pipeline():
     return self
 
   def __exit__(self, *args):
-    Pipeline._default_pipeline = None
+    _CompilationContext._default_pipeline = None
+    _pipeline._current_pipeline_conf = None
     _container_op._register_op_handler = self._old__register_op_handler
     _components._container_task_constructor = self._old_container_task_constructor
 

@@ -16,8 +16,9 @@ import kfp
 import kfp.dsl as dsl
 from kfp.dsl import component, graph_component
 from kfp.dsl.types import Integer, GCSPath, InconsistentTypeException
-from kfp.dsl import ContainerOp, Pipeline, PipelineParam
-from kfp.components.structures import ComponentSpec, InputSpec, OutputSpec
+from kfp.dsl import ContainerOp, PipelineParam
+from kfp.dsl._pipeline import _CompilationContext
+from kfp.components._structures import ComponentSpec, InputSpec, OutputSpec
 import unittest
 
 class TestPythonComponent(unittest.TestCase):
@@ -425,7 +426,7 @@ class TestGraphComponent(unittest.TestCase):
       with dsl.Condition(flip_result == 'heads'):
         flip_component(flip_result)
 
-    with Pipeline('pipeline') as p:
+    with _CompilationContext('pipeline') as p:
       param = PipelineParam(name='param')
       flip_component(param)
       self.assertEqual(1, len(p.groups))
