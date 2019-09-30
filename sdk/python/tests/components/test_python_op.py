@@ -630,7 +630,7 @@ class PythonOpTestCase(unittest.TestCase):
 
         self.helper_test_component_using_local_call(task_factory, arguments={}, expected_output_values={})
 
-        task_factory2 = comp.func_to_container_op(dummy_in_0_out_0, packages_to_install=['bad-package-0ee7cf93f396cd5072603dec154425cd53bf1c681c7c7605c60f8faf7799b901'])
+        task_factory2 = comp.func_to_container_op(dummy_in_0_out_0, packages_to_install=['bad-package-0ee7cf93'])
         with self.assertRaises(Exception):
             self.helper_test_component_using_local_call(task_factory2, arguments={}, expected_output_values={})
 
