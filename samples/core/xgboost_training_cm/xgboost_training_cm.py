@@ -217,14 +217,14 @@ def xgb_train_pipeline(
     delete_cluster_op = dataproc_delete_cluster_op(
         project,
         region
-    ).apply(gcp.use_gcp_secret('user-gcp-sa'))
+    )
 
     with dsl.ExitHandler(exit_op=delete_cluster_op):
         create_cluster_op = dataproc_create_cluster_op(
             project,
             region,
             output
-        ).apply(gcp.use_gcp_secret('user-gcp-sa'))
+        )
 
         analyze_op = dataproc_analyze_op(
             project,
@@ -233,7 +233,7 @@ def xgb_train_pipeline(
             schema,
             train_data,
             output_template
-        ).apply(gcp.use_gcp_secret('user-gcp-sa'))
+        )
 
         transform_op = dataproc_transform_op(
             project,
@@ -244,7 +244,7 @@ def xgb_train_pipeline(
             target,
             analyze_op.output,
             output_template
-        ).apply(gcp.use_gcp_secret('user-gcp-sa'))
+        )
 
         train_op = dataproc_train_op(
             project,
@@ -257,7 +257,7 @@ def xgb_train_pipeline(
             workers,
             rounds,
             output_template
-        ).apply(gcp.use_gcp_secret('user-gcp-sa'))
+        )
 
         predict_op = dataproc_predict_op(
             project,
@@ -268,19 +268,21 @@ def xgb_train_pipeline(
             target,
             analyze_op.output,
             output_template
-        ).apply(gcp.use_gcp_secret('user-gcp-sa'))
+        )
 
         confusion_matrix_task = confusion_matrix_op(
             predict_op.output,
             output_template
-        ).apply(gcp.use_gcp_secret('user-gcp-sa'))
+        )
 
         roc_task = roc_op(
             predictions_dir=predict_op.output,
             true_class=true_label,
             true_score_column=true_label,
             output_dir=output_template
-        ).apply(gcp.use_gcp_secret('user-gcp-sa'))
+        )
+    
+    dsl.get_pipeline_conf().add_op_transformer(gcp.use_gcp_secret('user-gcp-sa'))
 
 if __name__ == '__main__':
     kfp.compiler.Compiler().compile(xgb_train_pipeline, __file__ + '.yaml')
