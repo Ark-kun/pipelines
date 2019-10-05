@@ -59,5 +59,41 @@ class PythonPipelineToGraphComponentTestCase(unittest.TestCase):
         self.assertEqual(expected_dict, graph_component.to_dict())
 
 
+    def test_graph_component_roundtrip(self):
+        # We want to test that graph component created from pipeline that instantiates a loaded graph component is identical to that loaded graph component
+        # In short: create_graph_component_spec_from_pipeline_func(load_component_from_file(file1)).save(file2) --> file2 == file1
+        # There are couple of reasons why this test needs to be more complicated:
+        # * The factory function returned by `load_component_from_file(file1)` cannot be a correct pipeline function:
+        # * * The return value is TaskSpec instead of tuple/dict and the outputs are in TaskSpec.outputs
+        # * * Some default values in the signature are _DefaultValue wrappers that are not supported by `annotation_to_type_struct`
+        # * * The docstring is not equal to the original compoennt description, because it additionally contains the component name
+        # We have to patch those discrepancies in this test to help the reasults fully match.
+
+        # This test relies on the fact that at this moment when graph component is instantiated, its child tasks are merged in the pipeline graph and are not put in a subgraph.
+        # When that feature is added, this test needs to be disabled or reworked.
+
+        graph_component_path = str(Path(__file__).parent / 'test_data' / 'retail_product_stockout_prediction_pipeline.component.yaml')
+        graph_op = comp.load_component_from_file(graph_component_path)
+        graph_component1 = graph_op.component_spec
+
+        import inspect
+        signature = inspect.signature(graph_op)
+        fixed_parameters = [
+            parameter.replace(default=parameter.default.value) if isinstance(parameter.default, kfp.components._components._DefaultValue) else parameter
+            for parameter in signature.parameters.values()
+        ]
+        fixed_signature = signature.replace(parameters=fixed_parameters)
+
+        def pipeline2(*args, **kwargs):
+            return graph_op(*args, **kwargs).outputs
+        pipeline2.__name__ = graph_op.__name__
+        pipeline2.__doc__ = graph_op.component_spec.description
+        pipeline2.__signature__ = fixed_signature
+
+        graph_component2 = create_graph_component_spec_from_pipeline_func(pipeline2)
+        self.maxDiff = None
+        self.assertEqual(graph_component1.to_dict(), graph_component2.to_dict())
+
+
 if __name__ == '__main__':
     unittest.main()

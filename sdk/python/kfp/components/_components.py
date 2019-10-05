@@ -264,10 +264,11 @@ def _create_task_factory_from_component_spec(component_spec:ComponentSpec, compo
         return inspect.Parameter.empty
 
     input_parameters = [
-        _dynamic.KwParameter(
+        inspect.Parameter(
             input_name_to_pythonic[port.name],
             annotation=(type_name_to_type.get(str(port.type), str(port.type)) if port.type else inspect.Parameter.empty),
             default=component_default_to_func_default(port.default, port.optional),
+            kind=inspect.Parameter.POSITIONAL_OR_KEYWORD,
         )
         for port in reordered_input_list
     ]
