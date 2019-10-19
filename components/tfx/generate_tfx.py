@@ -99,7 +99,7 @@ def flatten_message_descriptor(message_descriptor, prefix=''):
 
 
 #%%
-dict(example_gen_pb2.DESCRIPTOR.message_types_by_name)
+#dict(example_gen_pb2.DESCRIPTOR.message_types_by_name)
 
 #%%
 all_proto_module_names = [
@@ -235,6 +235,10 @@ executor
 #executor.Context()._unique_id
 
 #%%
+import json
+from google.protobuf import json_format
+
+#%%
 
 # Create input dict.
 input_base = standard_artifacts.ExternalArtifact()
@@ -248,22 +252,33 @@ eval_examples = standard_artifacts.Examples(split='eval')
 eval_examples.uri = os.path.join(output_data_dir, 'eval')
 output_dict = {'examples': [train_examples, eval_examples]}
 
+input_config_splits = [{'name': 'csv', 'pattern': 'csv/*'}]
+
+output_config_splits = {
+    'splitConfig': {
+        'splits': [
+            {'name': 'train', 'hashBuckets': 2},
+            {'name': 'eval', 'hashBuckets': 1},
+        ],
+    },
+}
+
+output_config_split_config_splits = [
+    {'name': 'train', 'hashBuckets': 2},
+    {'name': 'eval', 'hashBuckets': 1},
+]
+
+
 # Create exec proterties.
 exec_properties = {
-    'input_config':
-        json_format.MessageToJson(
-            example_gen_pb2.Input(splits=[
-                example_gen_pb2.Input.Split(name='csv', pattern='csv/*'),
-            ])),
-    'output_config':
-        json_format.MessageToJson(
-            example_gen_pb2.Output(
-                split_config=example_gen_pb2.SplitConfig(splits=[
-                    example_gen_pb2.SplitConfig.Split(
-                        name='train', hash_buckets=2),
-                    example_gen_pb2.SplitConfig.Split(
-                        name='eval', hash_buckets=1)
-                ])))
+    'input_config': json.dumps({
+        'splits': input_config_splits,
+    }),
+    'output_config': json.dumps({
+        'splitConfig': {
+            'splits': output_config_split_config_splits,
+        },
+    })
 }
 
 #%%
