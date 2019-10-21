@@ -104,9 +104,16 @@ def flatten_message_descriptor(message_descriptor, prefix=''):
 #%%
 all_proto_module_names = [
     'tfx.proto.example_gen_pb2',
-    'tfx.proto.trainer_pb2',
-    'tfx.proto.pusher_pb2',
     'tfx.proto.evaluator_pb2',
+    'tfx.proto.pusher_pb2',
+    'tfx.proto.trainer_pb2',
+    #'tensorflow_metadata.proto.v0.schema_pb2',
+    #'tensorflow_metadata.proto.v0.anomalies_pb2',
+    #'tensorflow_metadata.proto.v0.statistics_pb2',
+    #'tensorflow.core.example.example_pb2',
+    #'tfx.orchestration.kubeflow.proto.kubeflow_pb2',
+    #? ml_metadata.proto.metadata_store_pb2
+    #? presto_config_pb2
 ]
 
 import importlib
@@ -243,14 +250,18 @@ from google.protobuf import json_format
 # Create input dict.
 input_base = standard_artifacts.ExternalArtifact()
 input_base.uri = os.path.join(input_data_dir, 'external')
-input_dict = {'input_base': [input_base]}
+input_dict = {
+    'input_base': [input_base],
+}
 
 # Create output dict.
 train_examples = standard_artifacts.Examples(split='train')
 train_examples.uri = os.path.join(output_data_dir, 'train')
 eval_examples = standard_artifacts.Examples(split='eval')
 eval_examples.uri = os.path.join(output_data_dir, 'eval')
-output_dict = {'examples': [train_examples, eval_examples]}
+output_dict = {
+    'examples': [train_examples, eval_examples],
+}
 
 input_config_splits = [{'name': 'csv', 'pattern': 'csv/*'}]
 
@@ -290,4 +301,4 @@ executor.Do(
 
 #%%
 
-
+input_config_struct = {}
