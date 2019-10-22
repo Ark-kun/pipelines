@@ -38,8 +38,10 @@ def CsvExampleGen_GCS( #
 
     import json
     import os
+    from google.protobuf import json_format
     from tfx.components.example_gen import utils
     from tfx.components.example_gen.csv_example_gen.component import CsvExampleGen
+    from tfx.proto import example_gen_pb2
     from tfx.types import standard_artifacts
 
     # Create input dict.
@@ -51,9 +53,11 @@ def CsvExampleGen_GCS( #
     }
 
     # Create output dict.
-    input_config_dict = json.loads(input_config)
-    output_config_dict = json.loads(output_config)
-    split_names = utils.generate_output_split_names(input_config_dict, output_config_dict)
+    input_config_obj = example_gen_pb2.Input()
+    output_config_obj = example_gen_pb2.Output()
+    json_format.Parse(input_config, input_config_obj)
+    json_format.Parse(output_config, output_config_obj)
+    split_names = utils.generate_output_split_names(input_config_obj, output_config_obj)
     output_dict_examples = []
     for split_name in split_names:
         output_split_examples = standard_artifacts.Examples(split=split_name)
@@ -83,6 +87,6 @@ if __name__ == '__main__':
     kfp.components.func_to_container_op(
         CsvExampleGen_GCS,
         base_image='tensorflow/tensorflow:1.14.0-py3',
-        packages_to_install=['tfx==0.14'],
+        packages_to_install=['tfx==0.14', 'six>=1.12.0'],
         output_component_file='CsvExampleGen_GCS.component.yaml'
     )
