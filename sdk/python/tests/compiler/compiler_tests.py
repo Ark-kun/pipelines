@@ -507,16 +507,10 @@ class TestCompiler(unittest.TestCase):
       shutil.rmtree(tmpdir)
 
   def test_compile_pipeline_with_after(self):
-    def op():
-      return dsl.ContainerOp(
-        name='Some component name',
-        image='image'
-      )
-
     @dsl.pipeline(name='Pipeline', description='')
     def pipeline():
-      task1 = op()
-      task2 = op().after(task1)
+      task1 = some_op()
+      task2 = some_op().after(task1)
 
     compiler.Compiler()._compile(pipeline)
 
@@ -534,12 +528,7 @@ class TestCompiler(unittest.TestCase):
 
   def test_tolerations(self):
     """Test a pipeline with a tolerations."""
-    op1 = dsl.ContainerOp(
-      name='download',
-      image='busybox',
-      command=['sh', '-c'],
-      arguments=['sleep 10; wget localhost:5678 -O /tmp/results.txt'],
-      file_outputs={'downloaded': '/tmp/results.txt'}) \
+    op1 = some_op() \
       .add_toleration(V1Toleration(
       effect='NoSchedule',
       key='gpu',
@@ -566,19 +555,12 @@ implementation:
       op1().set_display_name('Custom name')
 
     workflow_dict = kfp.compiler.Compiler()._compile(some_pipeline)
-    template = workflow_dict['spec']['templates'][0]
+    name_to_template = {template['name']: template for template in workflow_dict['spec']['templates']}
+    template = name_to_template[name_to_template[workflow_dict['spec']['entrypoint']]['dag']['tasks'][0]['template']]
     self.assertEqual(template['metadata']['annotations']['pipelines.kubeflow.org/task_display_name'], 'Custom name')
 
   def test_set_ttl_seconds_after_finished(self):
     """Test a pipeline with ttl after finished."""
-    def some_op():
-        return dsl.ContainerOp(
-            name='sleep',
-            image='busybox',
-            command=['sleep 1'],
-        )
-
-    @dsl.pipeline()
     def some_pipeline():
       some_op()
       dsl.get_pipeline_conf().set_ttl_seconds_after_finished(86400)
@@ -587,13 +569,6 @@ implementation:
     self.assertEqual(workflow_dict['spec']['ttlSecondsAfterFinished'], 86400)
 
   def test_op_transformers(self):
-    def some_op():
-      return dsl.ContainerOp(
-          name='sleep',
-          image='busybox',
-          command=['sleep 1'],
-      )
-
     @dsl.pipeline(name='some_pipeline', description='')
     def some_pipeline():
       task1 = some_op()
