@@ -404,7 +404,7 @@ class Client(object):
     pipeline_name = os.path.basename(pipeline_file)
     experiment_name = experiment_name or os.environ.get(KF_PIPELINES_DEFAULT_EXPERIMENT_NAME, None)
     overridden_experiment_name = os.environ.get(KF_PIPELINES_OVERRIDE_EXPERIMENT_NAME, experiment_name)
-    if overridden_experiment_name != experiment_name:
+    if experiment_name and overridden_experiment_name != experiment_name:
       import warnings
       warnings.warn('Changing experiment name from "{}" to "{}".'.format(experiment_name, overridden_experiment_name))
     experiment_name = overridden_experiment_name or 'Default'
