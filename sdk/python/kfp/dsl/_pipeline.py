@@ -13,7 +13,6 @@
 # limitations under the License.
 
 
-
 import sys
 
 
@@ -139,8 +138,6 @@ def get_pipeline_conf():
     Note: call the function inside the user defined pipeline function.
   """
   return _current_pipeline_conf
-
-#TODO: Add back the Pipeline.add_pipeline(name, description) deprecated function that TFX has taken dependency on.
 
 
 class Pipeline:

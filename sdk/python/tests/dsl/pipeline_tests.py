@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import kfp
-from kfp.dsl import ContainerOp, pipeline
+from kfp.dsl import ContainerOp
 from kfp.dsl._active_compilation_context import get_active_pipeline_context
 from kfp.dsl._compilation_context import _CompilationContext
 from kfp.dsl._metadata import _extract_pipeline_metadata

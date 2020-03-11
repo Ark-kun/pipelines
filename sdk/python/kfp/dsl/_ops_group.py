@@ -18,7 +18,6 @@ from kfp.dsl import _for_loop, _pipeline_param
 
 from . import _container_op
 from ..dsl._active_compilation_context import get_active_pipeline_context
-from ._pipeline_param import ConditionOperator
 
 
 class OpsGroup(object):
