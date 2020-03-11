@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import kfp.dsl as dsl
-from kfp.dsl import PipelineParam, ContainerOp, ExitHandler, OpsGroup
+from kfp.dsl import PipelineParam, ContainerOp, ExitHandler, OpsGroup, Condition
 from kfp.dsl._compilation_context import _CompilationContext
 import unittest
 
@@ -110,7 +110,7 @@ class TestExitHandler(unittest.TestCase):
 
 class TestConditionOp(unittest.TestCase):
   def test_basic(self):
-    with Pipeline('somename') as p:
+    with _CompilationContext('somename') as p:
       param1 = 'pizza'
       condition1 = Condition(param1 == 'pizza')
       self.assertEqual(condition1.name, None)

@@ -125,7 +125,7 @@ class ExitHandler(OpsGroup):
       raise ValueError('exit_op cannot depend on any other ops.')
 
     # Removing exit_op form any group
-    _pipeline.Pipeline.get_default_pipeline().remove_op_from_groups(exit_op)
+    get_active_pipeline_context().remove_op_from_groups(exit_op)
 
     # Setting is_exit_handler since the compiler might be using this attribute. TODO: Check that it's needed
     exit_op.is_exit_handler = True
