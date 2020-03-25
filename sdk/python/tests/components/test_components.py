@@ -18,11 +18,10 @@ import unittest
 from contextlib import contextmanager
 from pathlib import Path
 
-
-import kfp.components as comp
-from kfp.components._components import _resolve_command_line_and_paths
-from kfp.components._yaml_utils import load_yaml
-from kfp.components.structures import ComponentSpec
+import component_library as comp
+from component_library._components import _resolve_command_line_and_paths
+from component_library._yaml_utils import load_yaml
+from component_library.structures import ComponentSpec
 
 
 class LoadComponentTestCase(unittest.TestCase):

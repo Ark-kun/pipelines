@@ -1,4 +1,4 @@
-# Copyright 2020 Kubeflow Pipelines' authors
+# Copyright 2020 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
+from kfp import components
+
 import sys
-import kfp
-sys.modules['component_library'] = kfp.components
+sys.modules['component_library.components'] = components
