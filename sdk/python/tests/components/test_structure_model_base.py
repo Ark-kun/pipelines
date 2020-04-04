@@ -244,6 +244,26 @@ class StructureModelBaseTestCase(unittest.TestCase):
         
         self.assertNotEqual(A(1, 2), B(1, 2))
 
+    def test_handle_with_replacement(self):
+        class S(ModelBase):
+            def __init__(self, a, b):
+                super().__init__(locals())
+        
+        s1 = S('a1', 'b1')
+        s2 = s1.with_replaced(b='b2')
+        self.assertEqual(s1.b, 'b1')
+        self.assertEqual(s2.b, 'b2')
+
+    def test_fail_with_replacement_on_invalid_args(self):
+        class S(ModelBase):
+            def __init__(self, a, b):
+                super().__init__(locals())
+        
+        s1 = S('a1', 'b1')
+        with self.assertRaises(TypeError):
+            # TypeError: __init__() got an unexpected keyword argument 'c'
+            s2 = s1.with_replaced(c='c2')
+
 
 if __name__ == '__main__':
     unittest.main()

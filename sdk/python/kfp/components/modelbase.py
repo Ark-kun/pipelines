@@ -274,15 +274,23 @@ class ModelBase:
 
     def to_dict(self) -> Mapping:
         return convert_object_to_struct(self, serialized_names=self._serialized_names)
-    
+
+    def with_replaced(self, **kwargs):
+        field_values = self._to_field_value_dict()
+        field_values.update(kwargs)
+        return self.__class__(**field_values)
+
     def _get_field_names(self):
         return list(inspect.signature(self.__init__).parameters)
+
+    def _to_field_value_dict(self):
+        return {field_name: getattr(self, field_name) for field_name in self._get_field_names()}
 
     def __repr__(self):
         return self.__class__.__name__ + '(' + ', '.join(param + '=' + repr(getattr(self, param)) for param in self._get_field_names()) + ')'
 
     def __eq__(self, other):
-        return self.__class__ == other.__class__ and {k: getattr(self, k) for k in self._get_field_names()} == {k: getattr(other, k) for k in other._get_field_names()}
+        return self.__class__ == other.__class__ and self._to_field_value_dict() == other._to_field_value_dict()
 
     def __ne__(self, other):
         return not self == other
