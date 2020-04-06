@@ -74,19 +74,14 @@ def load_component_from_url(url):
         A factory function with a strongly-typed signature.
         Once called with the required arguments, the factory constructs a pipeline task instance (ContainerOp).
     '''
-    if url is None:
-        raise TypeError
-
-    #Handling Google Cloud Storage URIs
-    if url.startswith('gs://'):
-        #Replacing the gs:// URI with https:// URI (works for public objects)
-        url = 'https://storage.googleapis.com/' + url[len('gs://'):]
-
-    import requests
-    resp = requests.get(url)
-    resp.raise_for_status()
+    component_spec = _load_component_spec_from_url(url)
+    url = _fix_component_uri(url)
     component_ref = ComponentReference(url=url)
-    return _load_component_from_yaml_or_zip_bytes(resp.content, url, component_ref)
+    return _create_task_factory_from_component_spec(
+        component_spec=component_spec,
+        component_filename=url,
+        component_ref=component_ref,
+    )
 
 
 def load_component_from_file(filename):
@@ -100,10 +95,11 @@ def load_component_from_file(filename):
         A factory function with a strongly-typed signature.
         Once called with the required arguments, the factory constructs a pipeline task instance (ContainerOp).
     '''
-    if filename is None:
-        raise TypeError
-    with open(filename, 'rb') as component_stream:
-        return _load_component_from_yaml_or_zip_stream(component_stream, filename)
+    component_spec = _load_component_spec_from_file(path=filename)
+    return _create_task_factory_from_component_spec(
+        component_spec=component_spec,
+        component_filename=filename,
+    )
 
 
 def load_component_from_text(text):
@@ -119,20 +115,52 @@ def load_component_from_text(text):
     '''
     if text is None:
         raise TypeError
-    return _create_task_factory_from_component_text(text, None)
+    component_spec = _load_component_spec_from_component_text(text)
+    return _create_task_factory_from_component_spec(component_spec=component_spec)
+
+
+def _fix_component_uri(uri: str) -> str:
+    #Handling Google Cloud Storage URIs
+    if uri.startswith('gs://'):
+        #Replacing the gs:// URI with https:// URI (works for public objects)
+        uri = 'https://storage.googleapis.com/' + uri[len('gs://'):]
+    return uri
+
+
+def _load_component_spec_from_file(path) -> ComponentSpec:
+    with open(path, 'rb') as component_stream:
+        return _load_component_spec_from_yaml_or_zip_stream(component_stream)
+
+
+def _load_component_spec_from_url(url: str):
+    if url is None:
+        raise TypeError
+
+    url = _fix_component_uri(url)
+
+    import requests
+    resp = requests.get(url)
+    resp.raise_for_status()
+    return _load_component_spec_from_yaml_or_zip_bytes(resp.content)
 
 
 _COMPONENT_FILE_NAME_IN_ARCHIVE = 'component.yaml'
 
 
-def _load_component_from_yaml_or_zip_bytes(bytes, component_filename=None, component_ref: ComponentReference = None):
+#def _load_component_from_yaml_or_zip_bytes(bytes, component_filename=None, component_ref: ComponentReference = None):
+#    component_spec = _load_component_spec_from_yaml_or_zip_bytes(bytes)
+#    return _create_task_factory_from_component_spec(component_spec, component_filename, component_ref)
+
+
+def _load_component_spec_from_yaml_or_zip_bytes(data: bytes):
     import io
-    component_stream = io.BytesIO(bytes)
-    return _load_component_from_yaml_or_zip_stream(component_stream, component_filename, component_ref)
+    component_stream = io.BytesIO(data)
+    return _load_component_spec_from_yaml_or_zip_stream(component_stream)
 
 
-def _load_component_from_yaml_or_zip_stream(stream, component_filename=None, component_ref: ComponentReference = None):
-    '''Loads component from a stream and creates a task factory function.
+def _load_component_spec_from_yaml_or_zip_stream(stream) -> ComponentSpec:
+    '''Loads component spec from a stream.
+
     The stream can be YAML or a zip file with a component.yaml file inside.
     '''
     import zipfile
@@ -141,20 +169,18 @@ def _load_component_from_yaml_or_zip_stream(stream, component_filename=None, com
         stream.seek(0)
         with zipfile.ZipFile(stream) as zip_obj:
             with zip_obj.open(_COMPONENT_FILE_NAME_IN_ARCHIVE) as component_stream:
-                return _create_task_factory_from_component_text(component_stream, component_filename, component_ref)
+                return _load_component_spec_from_component_text(
+                    text_or_file=component_stream,
+                )
     else:
         stream.seek(0)
-        return _create_task_factory_from_component_text(stream, component_filename, component_ref)
+        return _load_component_spec_from_component_text(stream)
 
 
-def _create_task_factory_from_component_text(text_or_file, component_filename=None, component_ref: ComponentReference = None):
+def _load_component_spec_from_component_text(text_or_file) -> ComponentSpec:
     component_dict = load_yaml(text_or_file)
-    return _create_task_factory_from_component_dict(component_dict, component_filename, component_ref)
-
-
-def _create_task_factory_from_component_dict(component_dict, component_filename=None, component_ref: ComponentReference = None):
     component_spec = ComponentSpec.from_dict(component_dict)
-    return _create_task_factory_from_component_spec(component_spec, component_filename, component_ref)
+    return component_spec
 
 
 _inputs_dir = '/tmp/inputs'
@@ -534,11 +560,9 @@ def _resolve_graph_task(
     for task_id, task_spec in graph._toposorted_tasks.items(): # Cannot use graph.tasks here since they might be listed not in dependency order. Especially on python <3.6 where the dicts do not preserve ordering
         task_component_spec = task_spec.component_ref.spec
         if not task_component_spec:
-            task_factory = component_store._load_component_from_ref(task_spec.component_ref)
-            task_component_spec = task_factory.component_spec
             task_spec = copy.copy(task_spec)
-            task_spec.component_ref = copy.copy(task_spec.component_ref)
-            task_spec.component_ref.spec = task_component_spec
+            task_spec.component_ref = component_store._load_component_spec_in_component_ref(task_spec.component_ref)
+            task_component_spec = task_spec.component_ref.spec
 
         # TODO: Handle the case when optional graph component input is passed to optional task component input
         task_arguments = {input_name: resolve_argument(argument) for input_name, argument in task_spec.arguments.items()}
