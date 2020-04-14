@@ -491,6 +491,221 @@ class LocalKubernetesContainerLauncher:
 
 
 
+class KubernetesContainerLauncherWithUploaderDownloaderContainers:
+    '''Launcher that uses single-node Kubernetes (uses hostPath for data passing)'''
+    def __init__(self, namespace: str = "default", service_account: str = None, service_account_name: str = None, client: 'kubernetes.client.ApiClient' = None):
+        self._namespace = namespace
+        self._service_account = service_account
+        self._service_account_name = service_account_name
+
+        import kubernetes
+        if client:
+            self._k8s_client = client
+        else:
+            #configuration = kubernetes.client.Configuration()
+            try:
+                kubernetes.config.load_incluster_config()
+            except:
+                kubernetes.config.load_kube_config()
+            self._k8s_client = kubernetes.client.ApiClient()
+
+    def launch_container_task(
+        self,
+        task_spec,
+        input_uris_map: dict = None,
+        output_uris_map: dict = None,
+    ):
+        input_uris_map = input_uris_map or {}
+        output_uris_map = output_uris_map or {}
+
+        input_names = list(input_uris_map.keys())
+        output_names = list(output_uris_map.keys())
+
+        import os
+        import shutil
+        import subprocess
+        import sys
+        import tempfile
+
+        #with tempfile.TemporaryDirectory() as tempdir: # OSError: [WinError 145] The directory is not empty: 'C:\\Users\\Ark\\AppData\\Local\\Temp\\tmpgej_f0zp\\outputs'
+        try:
+            tempdir = tempfile.mkdtemp()
+
+            host_workdir = os.path.join(tempdir, 'work')
+            #host_logdir = os.path.join(tempdir, 'logs')
+            host_input_paths_map = {name: os.path.join(tempdir, 'inputs', _sanitize_file_name(name), 'data') for name in input_names} # Or just user random temp dirs/subdirs
+            host_output_paths_map = {name: os.path.join(tempdir, 'outputs', _sanitize_file_name(name), 'data') for name in output_names} # Or just user random temp dirs/subdirs
+
+            Path(host_workdir).mkdir(parents=True, exist_ok=True)
+
+            # Providing input data
+            for input_name, input_uri in input_uris_map.items():
+                input_host_path = host_input_paths_map[input_name]
+                Path(input_host_path).parent.mkdir(parents=True, exist_ok=True)
+                download(input_uri, input_host_path)
+
+            for output_host_path in host_output_paths_map.values():
+                Path(output_host_path).parent.mkdir(parents=True, exist_ok=True)
+
+            container_input_root = '/tmp/inputs/'
+            container_output_root = '/tmp/outputs/'
+            container_input_paths_map = {name: str(PurePosixPath(container_input_root) / _sanitize_file_name(name) / 'data') for name in input_names} # Or just user random temp dirs/subdirs
+            container_output_paths_map = {name: str(PurePosixPath(container_output_root) / _sanitize_file_name(name) / 'data') for name in output_names} # Or just user random temp dirs/subdirs
+
+            component_spec = task_spec.component_ref.spec
+
+            resolved_cmd = _resolve_command_line_and_paths(
+                component_spec=component_spec,
+                arguments=task_spec.arguments,
+                input_path_generator=container_input_paths_map.get,
+                output_path_generator=container_output_paths_map.get,
+            )
+
+            import kubernetes
+            volumes = []
+            input_volume_mounts = []
+            output_volume_mounts = []
+            input_path_uri_map = {}
+            output_path_uri_map = {}
+
+            for input_name in input_names:
+                host_dir = os.path.dirname(host_input_paths_map[input_name])
+                host_dir = '/' + host_dir.replace('\\', '/').replace(':', '') # Fix for Windows https://github.com/kubernetes/kubernetes/issues/59876
+                container_dir = os.path.dirname(container_input_paths_map[input_name])
+                input_path_uri_map[container_input_paths_map[input_name]] = input_uris_map[input_name]
+                volume_name = _sanitize_kubernetes_resource_name('inputs-' + input_name)
+                volumes.append(
+                    kubernetes.client.V1Volume(
+                        name=volume_name,
+                        empty_dir=kubernetes.client.V1EmptyDirVolumeSource(),
+                    )
+                )
+                input_volume_mounts.append(
+                    kubernetes.client.V1VolumeMount(
+                        name=volume_name,
+                        mount_path=container_dir,
+                        #mount_propagation=?
+                        read_only=False, # We're copying the input data anyways, so it's OK if the container modifies it.
+                        #sub_path=....
+                    )
+                )
+
+            for output_name in output_names:
+                host_dir = os.path.dirname(host_output_paths_map[output_name])
+                host_dir = '/' + host_dir.replace('\\', '/').replace(':', '') # Fix for Windows https://github.com/kubernetes/kubernetes/issues/59876
+                container_dir = os.path.dirname(container_output_paths_map[output_name])
+                output_path_uri_map[container_output_paths_map[output_name]] = output_uris_map[output_name]
+                volume_name = _sanitize_kubernetes_resource_name('outputs-' + output_name)
+                volumes.append(
+                    kubernetes.client.V1Volume(
+                        name=volume_name,
+                        empty_dir=kubernetes.client.V1EmptyDirVolumeSource(),
+                    )
+                )
+                output_volume_mounts.append(
+                    kubernetes.client.V1VolumeMount(
+                        name=volume_name,
+                        mount_path=container_dir,
+                        #sub_path=....
+                    )
+                )
+
+            container_env = [
+                kubernetes.client.V1EnvVar(name=name, value=value)
+                for name, value in (component_spec.implementation.container.env or {}).items()
+            ]
+            main_container_spec = kubernetes.client.V1Container(
+                name='main',
+                image=component_spec.implementation.container.image,
+                command=resolved_cmd.command,
+                args=resolved_cmd.args,
+                env=container_env,
+                volume_mounts=input_volume_mounts + output_volume_mounts,
+            )
+
+            downloader_args = []
+            for path, uri in input_path_uri_map.items():
+                downloader_args.extend([uri, path])
+
+            downloader_container_spec = kubernetes.client.V1Container(
+                name='downloader',
+                image='...',
+                command=['...'],
+                args=downloader_args,
+                volume_mounts=input_volume_mounts,
+            )
+
+            uploader_args = []
+            for path, uri in output_path_uri_map.items():
+                uploader_args.extend([path, uri])
+
+            uploader_container_spec = kubernetes.client.V1Container(
+                name='uploader',
+                image='...',
+                command=['...'],
+                args=uploader_args,
+                volume_mounts=input_volume_mounts,
+            )
+
+            dummy_container_spec = kubernetes.client.V1Container(
+                name='dummy',
+                image='alpine',
+                command=['true'],
+            )
+
+            pod_spec=kubernetes.client.V1PodSpec(
+                init_containers=[
+                    downloader_container_spec,
+                    main_container_spec,
+                    uploader_container_spec,
+                ],
+                containers=[
+                    dummy_container_spec,
+                ],
+                volumes=volumes,
+                restart_policy='Never',
+                service_account=self._service_account,
+                service_account_name=self._service_account_name,
+            )
+
+            pod=kubernetes.client.V1Pod(
+                api_version='v1',
+                kind='Pod',
+                metadata=kubernetes.client.V1ObjectMeta(
+                    #name='',
+                    generate_name='task-pod-',
+                    #namespace=self._namespace,
+                    labels={},
+                    annotations={},
+                    owner_references=[
+                        #kubernetes.client.V1OwnerReference(),
+                    ],
+                ),
+                spec=pod_spec,
+            )
+
+            core_api = kubernetes.client.CoreV1Api(api_client=self._k8s_client)
+            pod_res = core_api.create_namespaced_pod(
+                namespace=self._namespace,
+                body=pod,
+            )
+
+            print('Pod name:')
+            print(pod_res.metadata.name)
+
+            pod_name = pod_res.metadata.name
+            wait_for_pod_to_stop_pending(client=self._k8s_client, pod_name=pod_name)
+            wait_for_pod_to_succeed_or_fail(client=self._k8s_client, pod_name=pod_name, timeout_seconds=30)
+
+            # Storing the output data
+            for output_name, output_uri in output_uris_map.items():
+                output_host_path = host_output_paths_map[output_name]
+                upload(output_host_path, output_uri)
+        finally:
+            shutil.rmtree(tempdir, ignore_errors=True)
+
+
+
 # %%
 def add(a: int, b: int) -> int:
     print('add(a={};b={})'.format(a, b))
