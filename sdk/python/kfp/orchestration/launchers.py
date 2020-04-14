@@ -430,21 +430,22 @@ class LocalKubernetesContainerLauncher:
                 )
 
             container_env = [
-                kubernetes.client.V1EnvVar(name=key, value=value)
+                kubernetes.client.V1EnvVar(name=name, value=value)
                 for name, value in (component_spec.implementation.container.env or {}).items()
             ]
+            main_container_spec = kubernetes.client.V1Container(
+                name='main',
+                image=component_spec.implementation.container.image,
+                command=resolved_cmd.command,
+                args=resolved_cmd.args,
+                env=container_env,
+                volume_mounts=volume_mounts,
+            )
 
             pod_spec=kubernetes.client.V1PodSpec(
                 init_containers=[],
                 containers=[
-                    kubernetes.client.V1Container(
-                        name='main',
-                        image=component_spec.implementation.container.image,
-                        command=resolved_cmd.command,
-                        args=resolved_cmd.args,
-                        env=container_env,
-                        volume_mounts=volume_mounts,
-                    )
+                    main_container_spec,
                 ],
                 volumes=volumes,
                 restart_policy='Never',
