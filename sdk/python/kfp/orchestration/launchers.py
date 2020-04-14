@@ -9,43 +9,6 @@ from kfp.components._structures import *
 from kfp.components._naming import _sanitize_file_name, _sanitize_kubernetes_resource_name
 
 #%%
-
-def add(a: int, b: int) -> int:
-    print('add(a={};b={})'.format(a, b))
-    return a + b
-
-add_op = create_component_from_func(add, base_image='python:3.8')
-
-
-
-#%%
-
-task = add_op(3, 5)
-
-#%%
-
-
-def launch_container_task_on_docker(
-    task_spec,
-):
-    component_spec = task.component_ref.spec
-
-    resolved_cmd = _resolve_command_line_and_paths(
-        component_spec=component_spec,
-        arguments=task.arguments,
-    )
-
-    import docker
-    docker_client = docker.from_env()
-
-    docker_client.containers.run(
-        image=component_spec.implementation.container.image,
-        entrypoint=resolved_cmd.command,
-        command=resolved_cmd.args,
-        environment=component_spec.implementation.container.env,
-    )
-
-#%%
 def run_container_tasks(
     task_specs: OrderedDict,
     graph_input_arguments: dict,
@@ -330,7 +293,7 @@ def wait_for_pod_to_stop_pending(client, pod_name: str, timeout_seconds=30):
 
 
 def wait_for_pod_to_succeed_or_fail(client, pod_name: str, timeout_seconds=30):
-    logging.info('wait_for_pod_to_stop_pending({})'.format(pod_name))
+    logging.info('wait_for_pod_to_succeed_or_fail({})'.format(pod_name))
     pod_watch = kubernetes.watch.Watch()
     #label_selector=pod_name does not work
     core_api = kubernetes.client.CoreV1Api(api_client = client)
@@ -526,19 +489,19 @@ class LocalKubernetesContainerLauncher:
             shutil.rmtree(tempdir, ignore_errors=True)
 
 
-## %%
-#run_container_tasks_in_local_environment(
-#    task_specs=OrderedDict([
-#        (1, task),
-#    ]),
-#    output_root_path='A:\\_All\\My.Work\\2018.Google\\pipelines_worktree1\\sdk\\python\\kfp\\orchestration\\',
-#)
+
 # %%
+def add(a: int, b: int) -> int:
+    print('add(a={};b={})'.format(a, b))
+    return a + b
+
+add_op = create_component_from_func(add, base_image='python:3.8')
+
+task = add_op(3, 5)
 
 def pipeline1_func():
     task1 = add_op(3, 5)
     task2 = add_op(3, task1.outputs['Output'])
-
 
 pipeline1_component = create_graph_component_from_pipeline_func(pipeline1_func)
 #%%
@@ -555,12 +518,3 @@ run_container_tasks(
     #output_uri_generator = LocalPathGenerator('A:\\_All\\My.Work\\2018.Google\\pipelines_worktree1\\sdk\\python\\kfp\\orchestration\\data2\\'),
     output_uri_generator = LocalPathGenerator('./data3/'),
 )
-
-#%%
-import kubernetes
-k8s_client = kubernetes.client.CoreApi()
-#kubernetes.config.load_incluster_config()
-#kubernetes.config.load_kube_config()
-
-
-# %%
