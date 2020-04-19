@@ -525,6 +525,7 @@ _ResolvedGraphTask = NamedTuple(
         ('component_ref', ComponentReference),
         ('outputs', Mapping[str, Any]),
         ('task_arguments', Mapping[str, Any]),
+        ('task_objects', Mapping[str, Any]),
     ],
 )
 
@@ -543,6 +544,7 @@ def _resolve_graph_task(
     graph_input_arguments = {input.name: input.default for input in component_spec.inputs if input.default is not None}
     graph_input_arguments.update(arguments)
 
+    task_objects = {}
     outputs_of_tasks = {}
     def resolve_argument(argument):
         if isinstance(argument, (str, int, float, bool)):
@@ -574,6 +576,7 @@ def _resolve_graph_task(
             task_spec=task_spec,
             arguments=task_arguments,
         )
+        task_objects[task_id] = task_obj
 
         task_outputs_with_pythonic_names = task_obj.outputs
         task_outputs_with_original_names = {pythonic_output_name_to_original[pythonic_output_name]: output_value for pythonic_output_name, output_value in task_outputs_with_pythonic_names.items()}
@@ -587,5 +590,6 @@ def _resolve_graph_task(
         component_spec=component_spec,
         outputs = resolved_graph_outputs,
         task_arguments=arguments,
+        task_objects=task_objects,
     )
     return graph_task

@@ -350,7 +350,27 @@ implementation:
         self.assertEqual(task.outputs['graph out 3'], 'graph 2')
         self.assertEqual(task.outputs['graph out 4'], '42')
 
-#TODO: Test task name conversion to Argo-compatible names
+    #@unittest.skip('Not ready')
+    def test_load_graph_component_with_task_options(self):
+        component_text = '''\
+implementation:
+  graph:
+    tasks:
+      task 1:
+        componentRef: {name: Comp 1}
+        executionOptions:
+          cachingStrategy:
+            maxCacheStaleness: P30D
+'''
+        op = comp.load_component_from_text(component_text)
+        old_value = comp._components._always_expand_graph_components = True
+        try:
+            graph_task = op()
+        finally:
+            comp._components._always_expand_graph_components = old_value
+        task1 = list(graph_task.task_objects.values())[0]
+        self.assertEqual(task1.execution_options.caching_strategy.max_cache_staleness, "P30D")
+
 
 if __name__ == '__main__':
     unittest.main()

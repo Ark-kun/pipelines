@@ -58,6 +58,20 @@ class PythonPipelineToGraphComponentTestCase(unittest.TestCase):
 
         self.assertEqual(expected_dict, graph_component.to_dict())
 
+    def test_handle_capturing_task_properties(self):
+        test_data_dir = Path(__file__).parent / 'test_data'
+        producer_op = comp.load_component_from_file(str(test_data_dir / 'component_with_0_inputs_and_2_outputs.component.yaml'))
+
+        def pipeline1():
+            producer_task = producer_op()
+            producer_task.is_enabled = False
+
+        graph_component = create_graph_component_spec_from_pipeline_func(pipeline1)
+
+        producer_task_from_component = list(graph_component.implementation.graph.tasks.values())[0]
+
+        self.assertEqual(producer_task_from_component.is_enabled, False)
+
 
 if __name__ == '__main__':
     unittest.main()
