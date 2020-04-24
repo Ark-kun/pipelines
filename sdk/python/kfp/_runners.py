@@ -14,6 +14,7 @@
 
 __all__ = [
     'run_pipeline_func_on_cluster',
+    'run_pipeline_func_on_google_cloud',
 ]
 
 
@@ -21,6 +22,8 @@ from typing import Mapping, Callable
 
 from . import Client
 from . import dsl
+
+from .orchestration.google_cloud._pipeline_runner import run_pipeline_func_on_google_cloud
 
 
 def run_pipeline_func_on_cluster(pipeline_func: Callable, arguments: Mapping[str, str], run_name : str = None, experiment_name : str = None, kfp_client : Client = None, pipeline_conf: dsl.PipelineConf = None):
