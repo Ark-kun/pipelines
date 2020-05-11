@@ -162,7 +162,7 @@
           "type": "object",
           "additionalProperties": {"$ref": "#/definitions/StringOrPlaceholder"}
         },
-        "unconfigurableOutputPaths": {
+        "fileOutputs": {
           "description": "Legacy. Deprecated. Can be used to specify local output file paths for containers that do not allow setting the path of some output using command-line.",
           "type": "object",
           "additionalProperties": {"type": "string"}

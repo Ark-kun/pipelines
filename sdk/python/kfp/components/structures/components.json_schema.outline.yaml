@@ -36,7 +36,6 @@
                                     else: StringOrPlaceholder[]
                     args: StringOrPlaceholder[]
                     env: Map[str, StringOrPlaceholder]
-                    unconfigurableOutputPaths: Map[str, str]
             <GraphImplementation>:
                 graph: #GraphSpec
                     outputValues: Map str -> TaskOutputArgument
