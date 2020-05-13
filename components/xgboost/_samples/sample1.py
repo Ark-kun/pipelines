@@ -28,6 +28,26 @@ implementation:
     - {inputValue: Delimiter}
 ''')
 
+skip_header_op = load_component_from_text('''
+name: Skip header line
+inputs:
+- {name: Text}
+outputs:
+- {name: Text}
+implementation:
+  container:
+    image: busybox
+    command:
+    - sh
+    - -exc
+    - |
+      mkdir -p "$(dirname "$1")"
+      <"$0" tail -n +2 | tr -d '"' >"$1"
+    - {inputPath: Text}
+    - {outputPath: Text}
+''')
+
+
 def dataset_pipeline():
     #dataset_op()
     get_training_data_task = dataset_op(
@@ -38,15 +58,19 @@ def dataset_pipeline():
         limit=100000,
     )
     
-    eval_data_task = cut_op(
-        text=get_training_data_task.output,
-        delimiter=',',
-        fields='2-',
-    )
+    #eval_data_task = cut_op(
+    #    text=get_training_data_task.output,
+    #    delimiter=',',
+    #    fields='2-',
+    #)
+    
+    training_data = skip_header_op(get_training_data_task.output).output
     
     xgboost_train_task = xgboost_train_op(
-        training_data=get_training_data_task.output,
+        #training_data=get_training_data_task.output,
+        training_data=training_data,
         label_column=0,
+        objective='reg:linear',
         num_iterations=200,
     )
     
@@ -56,10 +80,11 @@ def dataset_pipeline():
     #)
     
     xgboost_predict_op(
-        data=get_training_data_task.output,
+        #data=get_training_data_task.output,
+        data=training_data,
         model=xgboost_train_task.outputs['model'],
         label_column=0,
     )
 
-kfp_endpoint=None
+kfp_endpoint='https://7b9be24a9240fb0e-dot-us-central2.pipelines.googleusercontent.com/'
 kfp.Client(host=kfp_endpoint).create_run_from_pipeline_func(dataset_pipeline, arguments={})
