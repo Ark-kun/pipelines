@@ -13,7 +13,15 @@
 # limitations under the License.
 
 
-from kfp import components
+from kfp import components as __components
+
+#from kfp.components import *
 
 import sys
-sys.modules['component_library.components'] = components
+#sys.modules['component_library.components'] = components
+sys.modules['component_library'] = __components
+
+for name in dir(__components):
+    value = getattr(__components, name)
+    if isinstance(value, type(sys)):
+        sys.modules['component_library.' + name] = value
