@@ -127,7 +127,7 @@ func MutatePodIfCached(req *v1beta1.AdmissionRequest, clientMgr ClientManagerInt
 		annotations[ArgoWorkflowOutputs] = getValueFromSerializedMap(cachedExecution.ExecutionOutput, ArgoWorkflowOutputs)
 		labels[CacheIDLabelKey] = strconv.FormatInt(cachedExecution.ID, 10)
 		labels[KFPCachedLabelKey] = KFPCachedLabelValue // This label indicates the pod is taken from cache.
-		
+
 		// These labels cache results for metadata-writer.
 		labels[MetadataExecutionIDKey] = getValueFromSerializedMap(cachedExecution.ExecutionOutput, MetadataExecutionIDKey)
 		labels[MetadataWrittenKey] = "true"
@@ -135,7 +135,7 @@ func MutatePodIfCached(req *v1beta1.AdmissionRequest, clientMgr ClientManagerInt
 		dummyContainer := corev1.Container{
 			Name:    "main",
 			Image:   "alpine",
-			Command: []string{`echo`, `"This step output is taken from cache."`},
+			Command: []string{`true`},
 		}
 		dummyContainers := []corev1.Container{
 			dummyContainer,
