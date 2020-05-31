@@ -284,7 +284,9 @@ def _create_task_factory_from_component_spec(component_spec:ComponentSpec, compo
         component_ref = ComponentReference(spec=component_spec, url=component_filename)
     else:
         component_ref.spec = component_spec
-    
+
+    component_spec._component_ref = component_ref
+
     digest = getattr(component_spec, '_digest', None)
     # TODO: Calculate the digest if missing
     if digest:
