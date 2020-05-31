@@ -172,6 +172,8 @@ def _load_component_spec_from_component_text(text) -> ComponentSpec:
     data = data.replace(b'\r\n', b'\n')  # Normalizing line endings
     digest = hashlib.sha256(data).hexdigest()
     component_spec._digest = digest
+    git_blob_hash = hashlib.sha1(b'blob ' + str(len(data)).encode('utf-8') + b'\x00' + data).hexdigest()
+    component_spec._git_blob_hash = git_blob_hash
 
     return component_spec
 
@@ -292,6 +294,10 @@ def _create_task_factory_from_component_spec(component_spec:ComponentSpec, compo
         # TODO: Report possible digest conflicts
         component_ref.digest = digest
 
+    git_blob_hash = getattr(component_spec, '_git_blob_hash', None)
+    if git_blob_hash:
+        # TODO: Report possible GIT blob hash conflicts
+        component_ref.git_blob_hash = git_blob_hash
 
     def create_task_from_component_and_arguments(pythonic_arguments):
         arguments = {
