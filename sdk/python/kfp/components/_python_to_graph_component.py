@@ -22,7 +22,7 @@ from collections import OrderedDict
 from typing import Callable
 
 from . import _components
-from ._structures import TaskSpec, ComponentSpec, OutputSpec, GraphInputReference, TaskOutputArgument, GraphImplementation, GraphSpec
+from .structures import TaskSpec, ComponentSpec, OutputSpec, GraphInputReference, TaskOutputArgument, GraphImplementation, GraphSpec
 from ._naming import _make_name_unique_by_adding_index
 from ._python_op import _extract_component_interface
 from ._components import _create_task_factory_from_component_spec
