@@ -116,6 +116,7 @@ def create_container_op_from_component_and_arguments(
           'Unsupported output type: "{}". The type must be one of the following: {}.'
           .format(output.type, type_utils.all_types()))
 
+  inputs_dict = {input_spec.name: input_spec for input_spec in component_spec.inputs or []}
   outputs_dict = {output_spec.name: output_spec for output_spec in component_spec.outputs or []}
 
   def _input_artifact_placeholder(input_key: str) -> str:
@@ -130,6 +131,15 @@ def create_container_op_from_component_and_arguments(
   def _output_parameter_placeholder(output_key: str) -> str:
     return "{{{{$.outputs.parameters['{}'].output_file}}}}".format(output_key)
 
+  def _resolve_input_value_placeholder(input_key: str) -> str:
+    if type_utils.is_artifact_type(inputs_dict[input_key].type):
+      return _input_artifact_placeholder(input_spec.name)
+    else:
+      return _input_parameter_placeholder(input_spec.name)
+
+  def _resolve_input_path_placeholder(input_key: str) -> str:
+    return _input_artifact_placeholder(input_key)
+
   def _resolve_output_path_placeholder(output_key: str) -> str:
     if type_utils.is_parameter_type(outputs_dict[output_key].type):
       return _output_parameter_placeholder(output_key)
@@ -140,16 +150,14 @@ def create_container_op_from_component_and_arguments(
   # It doesn't matter wether it's InputValuePlaceholder or InputPathPlaceholder
   # from component_spec.
   placeholder_arguments = {
-      input_spec.name: _input_artifact_placeholder(input_spec.name)
-      if type_utils.is_artifact_type(input_spec.type) else
-      _input_parameter_placeholder(input_spec.name)
+      input_spec.name: _resolve_input_value_placeholder(input_spec.name)
       for input_spec in component_spec.inputs or []
   }
 
   resolved_cmd_ir = _resolve_command_line_and_paths(
       component_spec=component_spec,
       arguments=placeholder_arguments,
-      input_path_generator=_input_artifact_placeholder,
+      input_path_generator=_resolve_input_path_placeholder,
       output_path_generator=_resolve_output_path_placeholder,
   )
 
