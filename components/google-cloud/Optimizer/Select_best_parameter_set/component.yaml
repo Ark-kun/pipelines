@@ -1,0 +1,114 @@
+name: Get best parameter set
+description: Selects the best parameter set based on metrics.
+inputs:
+- {name: metrics_for_parameter_sets, type: JsonArray, description: 'List of parameter
+    sets and evaluation metrics for them. Each list item contains "parameters" dict
+    and "metrics" dict. Example: {"parameters": {"p1": 1.1, "p2": 2.2}, "metrics":
+    {"metric1": 101, "metric2": 102} }'}
+- {name: metric_name, type: String, description: Name of the metric to use, default: metric,
+  optional: true}
+- name: maximize
+  type: Boolean
+  default: "False"
+  optional: true
+outputs:
+- {name: parameters, type: JsonObject}
+- {name: metrics, type: JsonObject}
+- {name: metric_value, type: Float}
+implementation:
+  container:
+    image: python:3.8
+    command:
+    - python3
+    - -u
+    - -c
+    - |
+      def get_best_parameter_set(
+          metrics_for_parameter_sets,
+          metric_name = 'metric',
+          maximize = False,
+      ):
+          """Selects the best parameter set based on metrics.
+
+          Annotations:
+              author: Alexey Volkov <alexey.volkov@ark-kun.com>
+
+          Args:
+              metrics_for_parameter_sets: List of parameter sets and evaluation metrics for them. Each list item contains "parameters" dict and "metrics" dict. Example: {"parameters": {"p1": 1.1, "p2": 2.2}, "metrics": {"metric1": 101, "metric2": 102} }
+              metric_name: Name of the metric to use
+          """
+          min_or_max = max if maximize else min
+          best_parameter_set_and_metrics = min_or_max(metrics_for_parameter_sets, key=lambda entry: float(entry['metrics'][metric_name]))
+
+          return (
+              best_parameter_set_and_metrics['parameters'],
+              best_parameter_set_and_metrics['metrics'],
+              best_parameter_set_and_metrics['metrics'][metric_name],
+          )
+
+      def _serialize_json(obj) -> str:
+          if isinstance(obj, str):
+              return obj
+          import json
+          def default_serializer(obj):
+              if hasattr(obj, 'to_struct'):
+                  return obj.to_struct()
+              else:
+                  raise TypeError("Object of type '%s' is not JSON serializable and does not have .to_struct() method." % obj.__class__.__name__)
+          return json.dumps(obj, default=default_serializer, sort_keys=True)
+
+      def _serialize_float(float_value: float) -> str:
+          if isinstance(float_value, str):
+              return float_value
+          if not isinstance(float_value, (float, int)):
+              raise TypeError('Value "{}" has type "{}" instead of float.'.format(str(float_value), str(type(float_value))))
+          return str(float_value)
+
+      def _deserialize_bool(s) -> bool:
+          from distutils.util import strtobool
+          return strtobool(s) == 1
+
+      import json
+      import argparse
+      _parser = argparse.ArgumentParser(prog='Get best parameter set', description='Selects the best parameter set based on metrics.')
+      _parser.add_argument("--metrics-for-parameter-sets", dest="metrics_for_parameter_sets", type=json.loads, required=True, default=argparse.SUPPRESS)
+      _parser.add_argument("--metric-name", dest="metric_name", type=str, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("--maximize", dest="maximize", type=_deserialize_bool, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("----output-paths", dest="_output_paths", type=str, nargs=3)
+      _parsed_args = vars(_parser.parse_args())
+      _output_files = _parsed_args.pop("_output_paths", [])
+
+      _outputs = get_best_parameter_set(**_parsed_args)
+
+      _output_serializers = [
+          _serialize_json,
+          _serialize_json,
+          _serialize_float,
+
+      ]
+
+      import os
+      for idx, output_file in enumerate(_output_files):
+          try:
+              os.makedirs(os.path.dirname(output_file))
+          except OSError:
+              pass
+          with open(output_file, 'w') as f:
+              f.write(_output_serializers[idx](_outputs[idx]))
+    args:
+    - --metrics-for-parameter-sets
+    - {inputValue: metrics_for_parameter_sets}
+    - if:
+        cond: {isPresent: metric_name}
+        then:
+        - --metric-name
+        - {inputValue: metric_name}
+    - if:
+        cond: {isPresent: maximize}
+        then:
+        - --maximize
+        - {inputValue: maximize}
+    - '----output-paths'
+    - {outputPath: parameters}
+    - {outputPath: metrics}
+    - {outputPath: metric_value}
