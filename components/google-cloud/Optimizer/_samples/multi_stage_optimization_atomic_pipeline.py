@@ -5,6 +5,7 @@
 # For each suggested parameter set we train a model (semi-dummy) and measure its quality metrics.
 # We then collect the metrics for all suggested parameter sets and update out measurements set.
 # With the expanded set of measurements, each new optimization stage should result in better parameter set suggestions.
+# Finally we select the best parameter set based on the metrics.
 #
 # One aspect of this pipeline is the atomicity of the parameter set suggestion.
 # Some optimizers have a persistent mutable global state that is changed when parameter set metrics are submitted.
@@ -19,6 +20,7 @@ from kfp import components
 
 
 suggest_parameter_sets_from_measurements_op = components.load_component_from_url('https://raw.githubusercontent.com/kubeflow/pipelines/382c4d109fbd489bd85de54dd9171150e326b401/components/google-cloud/Optimizer/Suggest_parameter_sets_based_on_measurements/component.yaml')
+get_best_parameter_set_op = components.load_component_from_url('https://raw.githubusercontent.com/kubeflow/pipelines/f429f9176155608e8b7cc812ab3c844983224d20/components/google-cloud/Optimizer/Select_best_parameter_set/component.yaml')
 
 get_element_by_index_op = components.load_component_from_url('https://raw.githubusercontent.com/kubeflow/pipelines/55ef28a9d51edc4eeed2a5c6f44cc7457e8a41d8/components/json/Get_element_by_index/component.yaml')
 build_dict_op = components.load_component_from_url('https://raw.githubusercontent.com/kubeflow/pipelines/4a4be6b748b0d1284d65a417ce4ab5bec596e9fe/components/json/Build_dict/component.yaml')
@@ -147,6 +149,13 @@ def optimizer_pipeline():
         new_list_of_metrics_for_parameter_sets = build_list_op(*new_metrics_for_parameter_sets).output
         # Collecting metrics for all stages
         all_metrics_for_parameter_sets = combine_lists_op(all_metrics_for_parameter_sets, new_list_of_metrics_for_parameter_sets).output
+
+    # Getting the best parameter set and metric values
+    get_best_parameter_set_op(
+        metrics_for_parameter_sets=all_metrics_for_parameter_sets,
+        metric_name='metric',  # Optional
+        maximize=False,  # Optional
+    )
 
 
 if __name__ == '__main__':
