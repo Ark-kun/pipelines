@@ -85,17 +85,17 @@
           "image": "gcr.io/my-project/my-fancy-trainer",
           "args": [
             "--input-examples",
-            "{{$.inputs.artifacts['examples'].uri}}",
+            "{{$.inputs.artifacts['examples'].path}}",
             "--input-schema",
-            "{{$.inputs.artifacts['schema'].uri}}",
+            "{{$.inputs.artifacts['schema'].path}}",
             "--optimizer",
             "{{$.inputs.parameters['optimizer']}}",
             "--n_epochs",
             "{{$.inputs.parameters['n_epochs']}}",
             "--output-model",
-            "{{$.outputs.artifacts['model'].uri}}",
+            "{{$.outputs.artifacts['model'].path}}",
             "--output-metrics",
-            "{{$.outputs.artifacts['metrics'].uri}}"
+            "{{$.outputs.artifacts['metrics'].path}}"
           ],
           "resources": {
             "cpuLimit": 4.0,
@@ -114,9 +114,9 @@
             "--input-location",
             "{{$.inputs.parameters['input_location']}}",
             "--output-examples",
-            "{{$.outputs.artifacts['examples'].uri}}",
+            "{{$.outputs.artifacts['examples'].path}}",
             "--output-schema",
-            "{{$.outputs.artifacts['schema'].uri}}"
+            "{{$.outputs.artifacts['schema'].path}}"
           ]
         }
       }

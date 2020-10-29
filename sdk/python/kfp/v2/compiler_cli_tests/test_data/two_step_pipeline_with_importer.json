@@ -95,7 +95,7 @@
             "--epochs",
             "{{$.inputs.parameters['num_epochs']}}",
             "--model",
-            "{{$.outputs.artifacts['model_output'].uri}}",
+            "{{$.outputs.artifacts['model_output'].path}}",
             "--model-config",
             "{{$.outputs.parameters['model_config'].output_file}}"
           ]
@@ -116,7 +116,7 @@
           "image": "gcr.io/my-project/my-server",
           "args": [
             "--model-to-serve",
-            "{{$.inputs.artifacts['model'].uri}}",
+            "{{$.inputs.artifacts['model'].path}}",
             "--model-config",
             "{{$.inputs.parameters['model_cfg']}}"
           ]

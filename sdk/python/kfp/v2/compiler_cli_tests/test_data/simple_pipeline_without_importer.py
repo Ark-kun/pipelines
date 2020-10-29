@@ -19,11 +19,11 @@ from kfp.v2 import dsl
 import kfp.v2.compiler as compiler
 
 component_op_1 = kfp.components.load_component_from_text("""
-name: Write to GCS
+name: Write
 inputs:
-- {name: text, type: String, description: 'Content to be written to GCS'}
+- {name: text, type: String, description: 'Content to be written'}
 outputs:
-- {name: output_gcs_path, type: GCSPath, description: 'GCS file path'}
+- {name: data, type: Dataset, description: 'Dataset'}
 implementation:
   container:
     image: google/cloud-sdk:slim
@@ -32,15 +32,15 @@ implementation:
     - -c
     - |
       set -e -x
-      echo "$0" | gsutil cp - "$1"
+      echo "$0" > "$1"
     - {inputValue: text}
-    - {outputPath: output_gcs_path}
+    - {outputPath: data}
 """)
 
 component_op_2 = kfp.components.load_component_from_text("""
-name: Read from GCS
+name: Read
 inputs:
-- {name: input_gcs_path, type: GCSPath, description: 'GCS file path'}
+- {name: data, type: Dataset, description: 'Dataset'}
 implementation:
   container:
     image: google/cloud-sdk:slim
@@ -49,15 +49,15 @@ implementation:
     - -c
     - |
       set -e -x
-      gsutil cat "$0"
-    - {inputPath: input_gcs_path}
+      cat "$0"
+    - {inputPath: data}
 """)
 
 @dsl.pipeline(name='simple-two-step-pipeline')
 def simple_pipeline(text='Hello world!',):
   component_1 = component_op_1(text=text)
   component_2 = component_op_2(
-      input_gcs_path=component_1.outputs['output_gcs_path'])
+      data=component_1.outputs['data'])
 
 
 if __name__ == '__main__':

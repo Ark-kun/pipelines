@@ -110,10 +110,10 @@
             "{{$.inputs.parameters['input_3']}}",
             "{{$.inputs.parameters['input_4']}}",
             "{{$.inputs.artifacts['input_5'].uri}}",
-            "{{$.inputs.artifacts['input_6'].uri}}",
+            "{{$.inputs.artifacts['input_6'].path}}",
             "{{$.inputs.parameters['input_7']}}",
             "{{$.outputs.parameters['output_1'].output_file}}",
-            "{{$.outputs.artifacts['output_2'].uri}}",
+            "{{$.outputs.artifacts['output_2'].path}}",
             "{{$.outputs.parameters['output_3'].output_file}}"
           ]
         }
@@ -123,7 +123,7 @@
           "image": "gcr.io/image",
           "args": [
             "{{$.inputs.parameters['input_a']}}",
-            "{{$.inputs.artifacts['input_b'].uri}}",
+            "{{$.inputs.artifacts['input_b'].path}}",
             "{{$.inputs.parameters['input_c']}}"
           ]
         }

@@ -5,7 +5,7 @@
   "tasks": [
     {
       "taskInfo": {
-        "name": "Write to GCS"
+        "name": "Write"
       },
       "inputs": {
         "parameters": {
@@ -18,53 +18,53 @@
       },
       "outputs": {
         "artifacts": {
-          "output_gcs_path": {
+          "data": {
             "artifactType": {
-              "instanceSchema": "title: kfp.Artifact\ntype: object\nproperties:\n"
+              "instanceSchema": "title: kfp.Dataset\ntype: object\nproperties:\n"
             }
           }
         }
       },
-      "executorLabel": "Write to GCS"
+      "executorLabel": "Write"
     },
     {
       "taskInfo": {
-        "name": "Read from GCS"
+        "name": "Read"
       },
       "inputs": {
         "artifacts": {
-          "input_gcs_path": {
-            "producerTask": "Write to GCS",
-            "outputArtifactKey": "output_gcs_path"
+          "data": {
+            "producerTask": "Write",
+            "outputArtifactKey": "data"
           }
         }
       },
-      "executorLabel": "Read from GCS"
+      "executorLabel": "Read"
     }
   ],
   "deploymentConfig": {
     "@type": "type.googleapis.com/ml_pipelines.PipelineDeploymentConfig",
     "executors": {
-      "Write to GCS": {
+      "Write": {
         "container": {
           "image": "google/cloud-sdk:slim",
           "command": [
             "sh",
             "-c",
-            "set -e -x\necho \"$0\" | gsutil cp - \"$1\"\n",
+            "set -e -x\necho \"$0\" > \"$1\"\n",
             "{{$.inputs.parameters['text']}}",
-            "{{$.outputs.artifacts['output_gcs_path'].uri}}"
+            "{{$.outputs.artifacts['data'].path}}"
           ]
         }
       },
-      "Read from GCS": {
+      "Read": {
         "container": {
           "image": "google/cloud-sdk:slim",
           "command": [
             "sh",
             "-c",
-            "set -e -x\ngsutil cat \"$0\"\n",
-            "{{$.inputs.artifacts['input_gcs_path'].uri}}"
+            "set -e -x\ncat \"$0\"\n",
+            "{{$.inputs.artifacts['data'].path}}"
           ]
         }
       }
